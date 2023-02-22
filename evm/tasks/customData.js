@@ -68,9 +68,9 @@ module.exports = async (taskArgs, hre) => {
     let mos;
 
     if(taskArgs.ctype === "relay"){
-        mos = await ethers.getContractAt('MAPOmnichainServiceRelayV2',taskArgs.targetaddress);
+        mos = await ethers.getContractAt('MapoServiceRelayV2',taskArgs.targetaddress);
     } else if(taskArgs.ctype === "mos") {
-        mos = await ethers.getContractAt('MAPOmnichainServiceV2',taskArgs.targetaddress);
+        mos = await ethers.getContractAt('MapoServiceV2',taskArgs.targetaddress);
     } else if(taskArgs.ctype === "register") {
         mos = await ethers.getContractAt('TokenRegisterV2',taskArgs.targetaddress);
     }

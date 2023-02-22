@@ -25,7 +25,6 @@ module.exports = {
     hardhat: {
       forking: {
         enabled: false,
-        //url: `https://bsctest.pls2e.cc`,
         url: `https://data-seed-prebsc-1-s1.binance.org:8545`
         //url: `https://bsc-dataseed.eme-node.com`,
         //url: `https://bsc-dataseed2.defibit.io/`,
@@ -57,16 +56,6 @@ module.exports = {
       chainId : 80001,
       accounts: accounts
     },
-    Heco: {
-      url: `https://http-mainnet-node.huobichain.com`,
-      chainId : 128,
-      accounts: accounts
-    },
-    HecoTest: {
-      url: `https://http-testnet.hecochain.com`,
-      chainId : 256,
-      accounts: accounts
-    },
     Bsc: {
       url: `https://bsc-dataseed1.binance.org/`,
       chainId : 56,
@@ -88,16 +77,16 @@ module.exports = {
       chainId : 5,
       accounts: accounts
     },
-    Sepolia: {
-      url: `https://rpc.sepolia.org`,
-      chainId : 11155111,
+    Klay: {
+      url: `https://public-node-api.klaytnapi.com/v1/cypress`,
+      chainId : 8217,
       accounts: accounts
     },
-    KlaytnTest:{
-      url:`https://klaytn-baobab.blockpi.network/v1/rpc/public`,
-      chainId: 1001,
-      accounts:accounts
-    }
+    KlayTest: {
+      url: `https://api.baobab.klaytn.net:8651/`,
+      chainId : 1001,
+      accounts: accounts
+    },
   },
   solidity: {
     compilers: [
@@ -129,6 +118,6 @@ module.exports = {
     timeout: 2000000
   },
   etherscan: {
-    apiKey: process.env.BSC_SCAN_KEY
+    apiKey: process.env.INFURA_KEY
   }
 }

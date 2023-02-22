@@ -1,13 +1,13 @@
 
 task("mosDeploy",
-    "Deploy the upgradeable MapCrossChainService contract and initialize it",
+    "Deploy the upgradeable MOS contract and initialize it",
     require("./mosDeploy")
 )
     .addParam("wrapped", "native wrapped token address")
     .addParam("lightnode", "lightNode contract address")
 
 task("relayDeploy",
-    "Deploy the upgradeable MapCrossChainServiceRelay contract and initialize it",
+    "Deploy the upgradeable MOSRelay contract and initialize it",
     require("./relayDeploy")
 )
     .addParam("wrapped", "native wrapped token address")
@@ -15,21 +15,21 @@ task("relayDeploy",
 
 
 task("mosSetRelay",
-    "Initialize MapCrossChainServiceRelay address for MapCrossChainService",
+    "Initialize MOSRelay address for MOS",
     require("./mosSetRelay")
 )
     .addParam("relay", "map chain relay contract address")
     .addParam("chain", "map chain id")
 
 task("mosSetClient",
-    "Set light client address for MapCrossChainService",
+    "Set light client address for MOS",
     require("./mosSetClient")
 )
     .addParam("client", "light client address")
 
 
 task("mosRegisterChain",
-    "MapCrossChainService settings allow cross-chain tokens",
+    "MOS settings allow cross-chain tokens",
     require("./mosRegisterChain")
 )
     .addParam("token", "token address")
@@ -56,7 +56,7 @@ task("transferOut",
     "Cross-chain transfer out",
     require("./transferOut")
 )
-    .addParam("mos", "the mos address")
+    .addParam("mos", "the MOS address")
     .addParam("target", "The target address")
     .addParam("calldata", "call data")
     .addOptionalParam("gaslimit", "The receiver address, default is msg.sender",5000000,types.int)
@@ -71,21 +71,13 @@ task("addWhiteList",
     .addParam("whitelist","This is a whitelist address")
     .addOptionalParam("tag","Default to true","true")
 
+/*
 task("setMessageAddress",
     "Set message fee address ",
     require("./mosSetMessageAddress")
 )
     .addParam("messagefee", "message fee address")
-
-task("withdraw",
-    "withdraw token",
-    require("./withdraw")
-)
-    .addParam("mos", "The mos address")
-    .addOptionalParam("token", "The token address","0x0000000000000000000000000000000000000000",types.string)
-    .addOptionalParam("address", "The receiver address","",types.string)
-    .addParam("value", "withdraw value")
-
+*/
 
 task("setMessageFee",
     "set chain message fee",
@@ -106,7 +98,7 @@ task("mosList",
     "List mos relay infos",
     require("./mosList")
 )
-    .addOptionalParam("mos", "The mos address, default mos", "mos", types.string)
+    .addOptionalParam("mos", "The MOS address, default mos", "mos", types.string)
     .addOptionalParam("token", "The token address, default wtoken", "wtoken", types.string)
 
 task("customData",

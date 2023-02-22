@@ -5,11 +5,11 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    let proxy = await hre.deployments.get("MAPOmnichainServiceProxyV3");
+    let proxy = await hre.deployments.get("MapoServiceProxyV3");
 
     console.log("mos address:", proxy.address);
 
-    let mos = await ethers.getContractAt('MAPOmnichainServiceV3',proxy.address);
+    let mos = await ethers.getContractAt('MapoServiceV3',proxy.address);
 
     let ids = taskArgs.chains.split(",");
 

@@ -16,13 +16,13 @@ module.exports = async (taskArgs,hre) => {
 
     let address = taskArgs.mos;
     if (address == "mos") {
-        let proxy = await hre.deployments.get("MAPOmnichainServiceProxyV3")
+        let proxy = await hre.deployments.get("MapoServiceProxyV3")
 
         address = proxy.address;
     }
     console.log("mos address:\t", address);
 
-    let mos = await ethers.getContractAt('MAPOmnichainServiceV3', address);
+    let mos = await ethers.getContractAt('MapoServiceV3', address);
 
     let wtoken = await mos.wToken();
     let selfChainId = await mos.selfChainId();

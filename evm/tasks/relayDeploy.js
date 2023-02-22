@@ -6,27 +6,27 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    await deploy('MAPOmnichainServiceRelayV3', {
+    await deploy('MapoServiceRelayV3', {
         from: deployer.address,
         args: [],
         log: true,
-        contract: 'MAPOmnichainServiceRelayV3'
+        contract: 'MapoServiceRelayV3'
     })
 
-    let mosRelay = await ethers.getContract('MAPOmnichainServiceRelayV3');
+    let mosRelay = await ethers.getContract('MapoServiceRelayV3');
 
-    console.log("MAPOmnichainServiceRelayV3 address:",mosRelay.address);
+    console.log("MapoServiceRelayV3 address:",mosRelay.address);
 
     let data = mosRelay.interface.encodeFunctionData("initialize", [taskArgs.wrapped, taskArgs.lightnode]);
 
-    await deploy('MAPOmnichainServiceProxyV3', {
+    await deploy('MapoServiceProxyV3', {
         from: deployer.address,
         args: [mosRelay.address,data],
         log: true,
-        contract: 'MAPOmnichainServiceProxyV3',
+        contract: 'MapoServiceProxyV3',
     })
 
-    let mosRelayProxy = await ethers.getContract('MAPOmnichainServiceProxyV3');
+    let mosRelayProxy = await ethers.getContract('MapoServiceProxyV3');
 
     console.log("MAPCrossChainServiceRelayProxy address:",mosRelayProxy.address);
 

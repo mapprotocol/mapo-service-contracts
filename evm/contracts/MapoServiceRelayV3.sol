@@ -20,7 +20,7 @@ import "./utils/NearDecoder.sol";
 import "./utils/Utils.sol";
 
 
-contract MAPOmnichainServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPSUpgradeable {
+contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPSUpgradeable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -55,11 +55,10 @@ contract MAPOmnichainServiceRelayV3 is ReentrancyGuard, Initializable, Pausable,
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
 
-    event SetTokenRegister(address tokenRegister);
     event SetLightClientManager(address lightClient);
     event SetMessageFee(address _messageFeeAddress);
     event RegisterChain(uint256 _chainId, bytes _address, chainType _type);
-    event SetDistributeRate(uint _id, address _to, uint _rate);
+
     event AddWhiteList(address _messageAddress, bool _enable);
 
     function initialize(address _wToken, address _managerAddress) public initializer
@@ -228,7 +227,7 @@ contract MAPOmnichainServiceRelayV3 is ReentrancyGuard, Initializable, Pausable,
 
     /** UUPS *********************************************************/
     function _authorizeUpgrade(address) internal view override {
-        require(msg.sender == _getAdmin(), "MAPOmnichainServiceRelay: only Admin can upgrade");
+        require(msg.sender == _getAdmin(), "MapoServiceRelay: only Admin can upgrade");
     }
 
     function changeAdmin(address _admin) external onlyOwner checkAddress(_admin) {

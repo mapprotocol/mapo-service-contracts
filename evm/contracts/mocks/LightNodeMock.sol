@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.7;
 
-import "../mocks/RLPEncode.sol";
+import "../utils/RLPEncode.sol";
 
 contract LightNode {
 

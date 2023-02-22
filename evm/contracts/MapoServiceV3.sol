@@ -20,7 +20,7 @@ import "./utils/Utils.sol";
 import "./utils/EvmDecoder.sol";
 
 
-contract MAPOmnichainServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPSUpgradeable {
+contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPSUpgradeable {
     using SafeMath for uint;
     using RLPReader for bytes;
     using RLPReader for RLPReader.RLPItem;
@@ -208,7 +208,7 @@ contract MAPOmnichainServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOS
 
     /** UUPS *********************************************************/
     function _authorizeUpgrade(address) internal view override {
-        require(msg.sender == _getAdmin(), "MAPOmnichainService: only Admin can upgrade");
+        require(msg.sender == _getAdmin(), "MapoService: only Admin can upgrade");
     }
 
     function changeAdmin(address _admin) external onlyOwner checkAddress(_admin){

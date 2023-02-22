@@ -16,13 +16,13 @@ module.exports = async (taskArgs,hre) => {
 
     let address = taskArgs.relay;
     if (address == "relay") {
-        let proxy = await hre.deployments.get("MAPOmnichainServiceProxyV2")
+        let proxy = await hre.deployments.get("MapoServiceProxyV2")
 
         address = proxy.address;
     }
     console.log("mos address:\t", address);
 
-    let mos = await ethers.getContractAt('MAPOmnichainServiceRelayV2', address);
+    let mos = await ethers.getContractAt('MapoServiceRelayV2', address);
 
     let tokenmanager = await mos.tokenRegister();
     let wtoken = await mos.wToken();

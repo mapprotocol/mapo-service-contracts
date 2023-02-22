@@ -12,11 +12,11 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    let proxy = await hre.deployments.get("MAPOmnichainServiceProxyV3")
+    let proxy = await hre.deployments.get("MapoServiceProxyV3")
 
     console.log("mos address:", proxy.address);
 
-    let mos = await ethers.getContractAt('MAPOmnichainServiceRelayV3',proxy.address);
+    let mos = await ethers.getContractAt('MapoServiceRelayV3',proxy.address);
 
     let address = taskArgs.address;
     if (taskArgs.address.substr(0,2) != "0x") {

@@ -24,9 +24,9 @@ describe("MAPOmnichainServiceV3 start test", () =>{
         [owner, addr1] = await ethers.getSigners();
     })
 
-    it('constract deploy init', async function () {
+    it('contract deploy init', async function () {
 
-        MosMessage = await ethers.getContractFactory("MAPOmnichainServiceV3");
+        MosMessage = await ethers.getContractFactory("MapoServiceV3");
         mosMessage = await MosMessage.deploy();
         console.log("mosMessage address:",mosMessage.address);
 
@@ -42,7 +42,7 @@ describe("MAPOmnichainServiceV3 start test", () =>{
 
         let data  = await mosMessage.initialize(wrapped.address,lightNode.address);
 
-        const MapCrossChainServiceProxy = await ethers.getContractFactory("MAPOmnichainServiceProxyV3");
+        const MapCrossChainServiceProxy = await ethers.getContractFactory("MapoServiceProxyV3");
         let mossp = await MapCrossChainServiceProxy.deploy(mosMessage.address,data.data);
         await mossp.deployed()
         mosMessage = MosMessage.attach(mossp.address);
