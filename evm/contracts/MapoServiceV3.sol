@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "./interface/IMessageFee.sol";
+import "./interface/IFeeService.sol";
 import "./interface/IMOSV3.sol";
 import "./interface/ILightNode.sol";
 import "./utils/TransferHelper.sol";
@@ -32,7 +32,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     address public wToken;          // native wrapped token
     address public relayContract;
     ILightNode public lightNode;
-    IMessageFee public messageFee;
+    IFeeService public messageFee;
 
     enum chainType{
         NULL,
@@ -98,7 +98,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     }
 
     function setMessageFee(address _messageFeeAddress) external onlyOwner checkAddress(_messageFeeAddress) {
-        messageFee = IMessageFee(_messageFeeAddress);
+        messageFee = IFeeService(_messageFeeAddress);
         emit SetMessageFee(_messageFeeAddress);
     }
 

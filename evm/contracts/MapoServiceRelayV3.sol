@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/ILightClientManager.sol";
 import "./interface/IMOSV3.sol";
-import "./interface/IMessageFee.sol";
+import "./interface/IFeeService.sol";
 import "./utils/TransferHelper.sol";
 import "./utils/EvmDecoder.sol";
 import "./utils/NearDecoder.sol";
@@ -37,7 +37,7 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
     uint256 public nonce;
     address public wToken;        // native wrapped token
     ILightClientManager public lightClientManager;
-    IMessageFee public messageFee;
+    IFeeService public feeService;
 
     mapping(bytes32 => bool) public orderList;
     mapping(uint256 => bytes) public mosContracts;
@@ -91,7 +91,7 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
     }
 
     function setMessageFee(address _messageFeeAddress) external onlyOwner checkAddress(_messageFeeAddress) {
-        messageFee = IMessageFee(_messageFeeAddress);
+        feeService = IFeeService(_messageFeeAddress);
         emit SetMessageFee(_messageFeeAddress);
     }
 
@@ -129,7 +129,7 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
         require(_callData.gasLimit >= gasLimitMin ,"Execution gas too low");
         require(_callData.gasLimit <= gasLimitMax ,"Execution gas too high");
         require(messageWhiteList[msg.sender],"Non-whitelisted address");
-        (uint256 fee,address receiverFeeAddress) = messageFee.getMessageFee(_toChain,_callData.target);
+        (uint256 fee,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_callData.target);
         require(fee > 0,"Address has no message fee");
         uint amount = msg.value;
         //require(amount >= fee,"Please pay fee");
