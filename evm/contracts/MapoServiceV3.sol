@@ -3,8 +3,6 @@
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -149,7 +147,6 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         (uint256 fee,address receiverFeeAddress) = messageFee.getMessageFee(_toChain,_callData.target);
         require(fee > 0,"Address has no message fee");
         uint amount = msg.value;
-        //require(amount >= fee,"Please pay fee");
         require(_callData.value == 0,"Not supported at present value");
 
         if(amount > 0){

@@ -3,8 +3,6 @@
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -45,13 +43,6 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
     mapping(uint256 => bytes) public mosContracts;
     mapping(uint256 => chainType) public chainTypes;
     mapping(address => bool) public messageWhiteList;
-
-
-    event mapTransferRelay(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId,
-        address token, bytes from, bytes to, uint256 amount);
-
-    event mapDepositIn(uint256 indexed fromChain, uint256 indexed toChain, address indexed token, bytes32 orderId,
-        bytes from, address to, uint256 amount);
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
 
@@ -167,7 +158,7 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
                 IEvent.transferOutEvent memory outEvent = outEvents[i];
                 if (outEvent.toChain == 0) {continue;}
                 require(Utils.checkBytes(mosContract, mosContracts[_chainId]), "invalid mos contract");
-                //to do
+                // TODO
             }
         } else if (chainTypes[_chainId] == chainType.EVM) {
             IEvent.txLog[] memory logs = EvmDecoder.decodeTxLogs(logArray);
@@ -176,17 +167,23 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
                 bytes32 topic = abi.decode(log.topics[0], (bytes32));
 
                 if (topic == EvmDecoder.MAP_MESSAGE_TOPIC) {
-                    (, IEvent.dataOutEvent memory outEvent) = EvmDecoder.decodeDataLog(log);
-                    _messageIn(outEvent);
+                    bytes memory mosContract = Utils.toBytes(log.addr);
+                    if (Utils.checkBytes(mosContract, mosContracts[_chainId])) {
+                        (, IEvent.dataOutEvent memory outEvent) = EvmDecoder.decodeDataLog(log);
+                        _messageIn(_chainId, outEvent);
+                    }
                 }
             }
         } else {
             require(false, "chain type error");
         }
+
         emit mapTransferExecute(_chainId, selfChainId, msg.sender);
     }
 
-    function _messageIn(IEvent.dataOutEvent memory _outEvent) internal checkOrder(_outEvent.orderId)  {
+    function _messageIn(uint256 _chainId, IEvent.dataOutEvent memory _outEvent) internal checkOrder(_outEvent.orderId)  {
+
+        require(_chainId == _outEvent.fromChain, "MOS: invalid chain id");
 
         if(_outEvent.toChain == selfChainId){
 
@@ -206,7 +203,6 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
 
             emit mapMessageOut(selfChainId,_outEvent.toChain,_outEvent.orderId,_outEvent.cData);
         }
-
     }
 
 
