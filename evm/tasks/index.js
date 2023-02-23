@@ -87,6 +87,25 @@ task("setMessageFee",
     .addParam("target", "Target chain execution address")
     .addParam("chain", "to chain id")
 
+
+task("getGreeting",
+    "Gets the value of the current key",
+    require("./getGreeting")
+)
+    .addParam("greetingAddress", "greeting contract address")
+    .addParam("key", "Query key")
+
+task("sendGreeting",
+    "",
+    require("./sendGreeting")
+)
+    .addParam("greetingAddress", "greeting contract address")
+    .addParam("key", "key")
+    .addParam("value", "value")
+    .addParam("chainid", "The cross-chain chainId of the message")
+    .addOptionalParam("target", "Target chain execution address")
+
+
 task("relayList",
     "List mos relay infos",
     require("./relayList")
