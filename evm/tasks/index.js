@@ -71,13 +71,13 @@ task("addWhiteList",
     .addParam("whitelist","This is a whitelist address")
     .addOptionalParam("tag","Default to true","true")
 
-/*
-task("setMessageAddress",
-    "Set message fee address ",
-    require("./mosSetMessageAddress")
+
+task("setFeeService",
+    "Set message fee service address ",
+    require("./mosSetFeeService")
 )
-    .addParam("messagefee", "message fee address")
-*/
+    .addParam("address", "message fee address")
+
 
 task("setMessageFee",
     "set chain message fee",

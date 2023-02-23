@@ -13,7 +13,7 @@ describe("MAPO ServiceV3 start test", () =>{
 
     let pingPong;
 
-    let messageFee;
+    let feeService;
 
     beforeEach(async () =>{
         [owner, addr1] = await ethers.getSigners();
@@ -42,8 +42,8 @@ describe("MAPO ServiceV3 start test", () =>{
         await proxy.deployed()
         mos = mosContract.attach(proxy.address);
 
-        let feeContract = await ethers.getContractFactory("MessageFee");
-        messageFee = await  feeContract.deploy();
+        let feeContract = await ethers.getContractFactory("FeeService");
+        feeService = await  feeContract.deploy();
 
     });
 
@@ -56,11 +56,11 @@ describe("MAPO ServiceV3 start test", () =>{
 
          await mos.registerChain(pingPong.address,97,"true");
 
-         await mos.setMessageFee(messageFee.address);
+         await mos.setFeeService(feeService.address);
 
         await pingPong.setWhiteList(mos.address);
 
-        await messageFee.setMessageFee(97,pingPong.address,100);
+        await feeService.setMessageFee(97,pingPong.address,100);
 
     });
 

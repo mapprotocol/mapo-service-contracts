@@ -22,15 +22,6 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
     using SafeMath for uint256;
     using Address for address;
 
-    struct Rate {
-        address receiver;
-        uint rate;
-    }
-    enum chainType{
-        NULL,
-        EVM,
-        NEAR
-    }
     uint256 public constant gasLimitMin = 21000;
     uint256 public constant gasLimitMax = 10000000;
     uint256 public immutable selfChainId = block.chainid;
@@ -47,7 +38,7 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
 
     event SetLightClientManager(address lightClient);
-    event SetMessageFee(address _messageFeeAddress);
+    event SetFeeService(address feeServiceAddress);
     event RegisterChain(uint256 _chainId, bytes _address, chainType _type);
 
     event AddWhiteList(address _messageAddress, bool _enable);
@@ -90,9 +81,9 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
         _unpause();
     }
 
-    function setMessageFee(address _messageFeeAddress) external onlyOwner checkAddress(_messageFeeAddress) {
-        feeService = IFeeService(_messageFeeAddress);
-        emit SetMessageFee(_messageFeeAddress);
+    function setFeeService(address _feeServiceAddress) external onlyOwner checkAddress(_feeServiceAddress) {
+        feeService = IFeeService(_feeServiceAddress);
+        emit SetFeeService(_feeServiceAddress);
     }
 
 
@@ -129,12 +120,13 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
         require(_callData.gasLimit >= gasLimitMin ,"Execution gas too low");
         require(_callData.gasLimit <= gasLimitMax ,"Execution gas too high");
         require(messageWhiteList[msg.sender],"Non-whitelisted address");
-        (uint256 fee,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_callData.target);
-        require(fee > 0,"Address has no message fee");
-        uint amount = msg.value;
-        //require(amount >= fee,"Please pay fee");
+
         require(_callData.value == 0,"Not supported at present value");
 
+        (uint256 fee,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_callData.target);
+        //require(fee > 0,"Address has no message fee");
+        uint256 amount = msg.value;
+        require(amount == fee, "Need message fee");
         if(amount > 0 ){
             TransferHelper.safeTransferETH(receiverFeeAddress, amount);
         }
@@ -146,7 +138,6 @@ contract MapoServiceRelayV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3,
         emit mapMessageOut(selfChainId, _toChain, orderId, callData);
         return true;
     }
-
 
 
     function transferIn(uint256 _chainId, bytes memory _receiptProof) external nonReentrant whenNotPaused {

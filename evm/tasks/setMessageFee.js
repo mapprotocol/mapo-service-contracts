@@ -5,13 +5,13 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    let proxy = await hre.deployments.get("MessageFee");
+    let proxy = await hre.deployments.get("FeeService");
 
-    console.log("MessageFee address", proxy.address);
+    console.log("FeeService address", proxy.address);
 
-    let messageFee = await ethers.getContractAt('MessageFee', proxy.address);
+    let feeService = await ethers.getContractAt('FeeService', proxy.address);
 
-    await (await messageFee.connect(deployer).setMessageFee(taskArgs.chainid,taskArgs.target,taskArgs.fee)).wait();
+    await (await feeService.connect(deployer).setMessageFee(taskArgs.chainid,taskArgs.target,taskArgs.fee)).wait();
 
     console.log(` Set the fee for ${taskArgs.chainid} ${taskArgs.target} to ${taskArgs.fee} `);
 

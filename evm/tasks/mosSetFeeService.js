@@ -11,8 +11,8 @@ module.exports = async (taskArgs,hre) => {
 
     let mos = await ethers.getContractAt('MapoServiceV3', proxy.address);
 
-    await (await mos.connect(deployer).setMessageFee(taskArgs.messagefee)).wait();
+    await (await mos.connect(deployer).setFeeService(taskArgs.address)).wait();
 
-    console.log(`mos set  message fee ${taskArgs.messagefee} successfully `);
+    console.log(`mos set  message fee service address ${taskArgs.address} successfully `);
 
 }

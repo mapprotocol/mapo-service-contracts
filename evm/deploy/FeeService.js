@@ -5,17 +5,17 @@ module.exports = async function ({ethers, deployments}) {
 
     console.log("deployer address:", deployer.address);
 
-    await deploy('MessageFee', {
+    await deploy('FeeService', {
         from: deployer.address,
         args: [],
         log: true,
         contract: 'MessageFee',
     })
-    let messageFee = await ethers.getContract('MessageFee');
-    console.log("MessageFee address:", messageFee.address);
+    let feeService = await ethers.getContract('FeeService');
+    console.log("FeeService address:", feeService.address);
 
 
     console.log("messageFee deploy success")
 }
 
-module.exports.tags = ['MessageFee']
+module.exports.tags = ['FeeService']

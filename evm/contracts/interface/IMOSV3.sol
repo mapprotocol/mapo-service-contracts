@@ -3,6 +3,13 @@
 pragma solidity 0.8.7;
 
 interface IMOSV3 {
+
+    enum chainType{
+        NULL,
+        EVM,
+        NEAR
+    }
+
     struct CallData {
         bytes target;
         bytes callData;

@@ -32,13 +32,9 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     address public wToken;          // native wrapped token
     address public relayContract;
     ILightNode public lightNode;
-    IFeeService public messageFee;
+    IFeeService public feeService;
 
-    enum chainType{
-        NULL,
-        EVM,
-        NEAR
-    }
+
 
     mapping(bytes32 => bool) public orderList;
     mapping(uint256 => mapping(address => bool)) public tokenMappingList;
@@ -47,7 +43,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
     event SetLightClient(address _lightNode);
-    event SetMessageFee(address _messageFeeAddress);
+    event SetFeeService(address feeServiceAddress);
     event SetRelayContract(uint256 _chainId, address _relay);
     event RegisterChain(address _token, uint _toChain, bool _enable);
     event AddWhiteList(address _messageAddress, bool _enable);
@@ -97,9 +93,9 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         emit SetLightClient(_lightNode);
     }
 
-    function setMessageFee(address _messageFeeAddress) external onlyOwner checkAddress(_messageFeeAddress) {
-        messageFee = IFeeService(_messageFeeAddress);
-        emit SetMessageFee(_messageFeeAddress);
+    function setFeeService(address _feeServiceAddress) external onlyOwner checkAddress(_feeServiceAddress) {
+        feeService = IFeeService(_feeServiceAddress);
+        emit SetFeeService(_feeServiceAddress);
     }
 
 
@@ -144,12 +140,14 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         require(_callData.gasLimit >= gasLimitMin ,"Execution gas too low");
         require(_callData.gasLimit <= gasLimitMax ,"Execution gas too high");
         require(messageWhiteList[msg.sender],"Non-whitelisted address");
-        (uint256 fee,address receiverFeeAddress) = messageFee.getMessageFee(_toChain,_callData.target);
-        require(fee > 0,"Address has no message fee");
-        uint amount = msg.value;
+
         require(_callData.value == 0,"Not supported at present value");
 
-        if(amount > 0){
+        (uint256 fee,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_callData.target);
+        //require(fee > 0,"Address has no message fee");
+        uint256 amount = msg.value;
+        require(amount == fee, "Need message fee");
+        if (amount > 0) {
             TransferHelper.safeTransferETH(receiverFeeAddress, amount);
         }
 
