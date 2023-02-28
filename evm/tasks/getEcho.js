@@ -5,9 +5,9 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    let helloWorld = await ethers.getContractAt('HelloWorld', taskArgs.greetingAddress);
+    let echo = await ethers.getContractAt('Echo', taskArgs.echoAddress);
 
-    let value = await helloWorld.connect(deployer).HelloWorldList(taskArgs.key);
+    let value = await echo.connect(deployer).EchoList(taskArgs.key);
 
     console.log(`${taskArgs.key} : ${value}`);
 

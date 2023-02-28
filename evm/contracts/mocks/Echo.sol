@@ -14,11 +14,11 @@ interface IMapoService {
 
 }
 
-contract HelloWorld is Ownable {
+contract Echo is Ownable {
 
     address MapoService;
 
-    mapping(string => string) public HelloWorldList;
+    mapping(string => string) public EchoList;
 
     mapping(uint256 => address) public TargetList;
 
@@ -26,13 +26,13 @@ contract HelloWorld is Ownable {
 
     function setList(string memory _key,string memory _val) external returns(bool) {
         require(WhiteList[msg.sender]," have no right ");
-        HelloWorldList[_key] = _val;
+        EchoList[_key] = _val;
         return true;
     }
 
     function getData(string memory _key,string memory _val) public view returns(bytes memory data){
 
-        data = abi.encodeWithSelector(HelloWorld.setList.selector,_key,_val);
+        data = abi.encodeWithSelector(Echo.setList.selector,_key,_val);
     }
 
     function setWhiteList(address _executeAddress) external onlyOwner {
@@ -47,7 +47,7 @@ contract HelloWorld is Ownable {
         TargetList[_chainId] = _target;
     }
 
-    function greeting(uint256 _tochainId,bytes memory _target,string memory _key,string memory _val) external {
+    function echo(uint256 _tochainId,bytes memory _target,string memory _key,string memory _val) external {
 
         bytes memory data = getData(_key,_val);
 

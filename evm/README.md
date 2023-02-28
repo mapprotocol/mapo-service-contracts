@@ -138,3 +138,28 @@ npx hardhat relayList --relay <relay address> --token <token address> --network 
 ```
 npx hardhat mosList --mos <relay address> --token <token address> --network <network>
 ```
+
+## Echo details
+
+1. deploy echo
+
+```
+npx hardhat deployEcho --mos <optional mos address> --network <network>
+```
+2. set chainId target address
+```
+npx hardhat setTarget --chainid <chain id> --target <target address> --network <network>
+```
+
+## Echo game
+
+1. query key
+
+```
+npx hardhat getEcho --echoAddress <echo address> --key <key> --network <network>
+```
+2. send echo
+
+```
+npx hardhat sendEcho --echoAddress <echo address> --key <key> --value <echo value> --network <network>
+```
