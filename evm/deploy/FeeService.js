@@ -9,7 +9,7 @@ module.exports = async function ({ethers, deployments}) {
         from: deployer.address,
         args: [],
         log: true,
-        contract: 'MessageFee',
+        contract: 'FeeService',
     })
     let feeService = await ethers.getContract('FeeService');
     console.log("FeeService address:", feeService.address);

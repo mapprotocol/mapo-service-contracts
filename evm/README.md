@@ -42,12 +42,12 @@ npx hardhat test
 
 ## Deploy
 
-### MOS Relay
-The following steps help to deploy MOS relay contracts on Map mainnet or Makalu testnet
+### MOS Relay Contract
+The following steps help to deploy MOS Relay contracts on MAPO Relay Chain.
 
 1. Deploy Message fee
 ```
-npx hardhat deploy --tags MessageFee --network <network>
+npx hardhat deploy --tags FeeService --network <network>
 ````
 2. Deploy MOS Relay
 
@@ -55,12 +55,12 @@ npx hardhat deploy --tags MessageFee --network <network>
 npx hardhat relayDeploy --wrapped <wrapped token> --lightnode <lightNodeManager address> --network <network>
 ````
 
-* `wrapped token` is wrapped MAP token address on MAP mainnet or MAP Makalu.
-* `lightNodeManager address` is the light client mananger address deployed on MAP mainnet or MAP Makalu. See [here](../protocol/README.md) for more information.
+* `wrapped token` is wrapped MAP token address on MAP mainnet or MAP Makalu testnet.
+* `lightNodeManager address` is the light client mananger address deployed on MAP mainnet or MAP Makalu. See [here](https://github.com/mapprotocol/map-contracts/protocol/README.md) for more information.
 
 3. Init MOS Relay
 ```
-npx hardhat setMessageAddress  --messagefee <message fee address> --network <network>
+npx hardhat setFeeService  --address <message fee service address> --network <network>
 ````
 
 ### MOS on EVM Chains
@@ -77,20 +77,20 @@ npx hardhat mosSetRelay --relay <Relay address> --chain <map chainId> --network 
 ```
 3. Init MOS
 ```
-npx hardhat setMessageAddress  --messagefee <message fee address> --network <network>
+npx hardhat setFeeService  --address <message fee service address> --network <network>
 ````
 
 4. Register
    The following command applies to the cross-chain contract configuration of Map mainnet and Makalu testnet
 ```
-npx hardhat relayRegisterChain --address <MAPOmnichainService address> --chain <chain id> --network <network>
+npx hardhat relayRegisterChain --address <MOS address> --chain <chain id> --network <network>
 ```
 
 ### MOS on other chain
 
 The following four commands are generally applicable to Map mainnet and Makalu testnet
 ```
-npx hardhat relayRegisterChain --address <MAPOmnichainService address> --chain <near chain id> --type 2 --network <network>
+npx hardhat relayRegisterChain --address <MOS address> --chain <near chain id> --type 2 --network <network>
 ```
 
 ## Configure
@@ -111,12 +111,12 @@ When upgrade the mos contract through the following commands.
 Please execute the following command on the EVM compatible chain
 
 ```
-npx hardhat deploy --tags MAPOmnichainServiceV3Up --network <network>
+npx hardhat deploy --tags MapoServiceV3Up --network <network>
 ```
 
 Please execute the following command on relay chain mainnet or Makalu testnet
 ```
-npx hardhat deploy --tags MAPOmnichainServiceRelayV3Up --network <network>
+npx hardhat deploy --tags MapoServiceRelayV3Up --network <network>
 ```
 
 ## Message cross-chain transfer

@@ -15,7 +15,7 @@ module.exports = async (taskArgs,hre) => {
 
     let mosRelay = await ethers.getContract('MapoServiceRelayV3');
 
-    console.log("MapoServiceRelayV3 address:",mosRelay.address);
+    console.log("MapoServiceRelayV3 impl address:",mosRelay.address);
 
     let data = mosRelay.interface.encodeFunctionData("initialize", [taskArgs.wrapped, taskArgs.lightnode]);
 
@@ -28,6 +28,6 @@ module.exports = async (taskArgs,hre) => {
 
     let mosRelayProxy = await ethers.getContract('MapoServiceProxyV3');
 
-    console.log("MAPCrossChainServiceRelayProxy address:",mosRelayProxy.address);
+    console.log("MapoServiceProxyV3 address:",mosRelayProxy.address);
 
 }

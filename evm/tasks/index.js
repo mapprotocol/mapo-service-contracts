@@ -74,7 +74,7 @@ task("addWhiteList",
 
 task("setFeeService",
     "Set message fee service address ",
-    require("./mosSetFeeService")
+    require("./setFeeService")
 )
     .addParam("address", "message fee address")
 
