@@ -69,7 +69,7 @@ task("addWhiteList",
     require("./addWhiteList")
 )
     .addParam("whitelist","This is a whitelist address")
-    .addOptionalParam("tag","Default to true","true")
+    .addOptionalParam("tag","Default to true", true, types.boolean)
 
 
 task("setFeeService",
