@@ -11,7 +11,7 @@ library EvmDecoder {
     using RLPReader for bytes;
     using RLPReader for RLPReader.RLPItem;
 
-    bytes32 constant MAP_MESSAGE_TOPIC = keccak256(bytes('mapMessageOut(uint256,uint256,bytes32,bytes)'));
+    bytes32 constant MAP_MESSAGE_TOPIC = keccak256(bytes('mapMessageOut(uint256,uint256,bytes32,bytes,bytes)'));
 
 
     function decodeTxLogs(bytes memory logsHash)
@@ -46,8 +46,8 @@ library EvmDecoder {
         outEvent.fromChain = abi.decode(log.topics[1], (uint256));
         outEvent.toChain = abi.decode(log.topics[2], (uint256));
 
-        (outEvent.orderId, outEvent.cData)
-        = abi.decode(log.data, (bytes32, bytes));
+        (outEvent.orderId, outEvent.fromAddress,outEvent.cData)
+        = abi.decode(log.data, (bytes32,bytes,bytes));
     }
 
 

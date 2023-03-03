@@ -51,7 +51,7 @@ contract Echo is Ownable {
 
         bytes memory data = getData(_key,_val);
 
-        IMapoService.CallData memory cData = IMapoService.CallData(_target,data,50000,0);
+        IMapoService.CallData memory cData = IMapoService.CallData(_target,data,500000,0);
 
         require(
             IMapoService(MapoService).transferOut(
