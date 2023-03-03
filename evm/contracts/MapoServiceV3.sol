@@ -196,9 +196,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
             (success, ) = callDataAddress.call{gas:cData.gasLimit}(cData.callData);
         }
 
-        bytes memory fromAddress = Utils.toBytes(msg.sender);
-
-        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,fromAddress,cData.callData, success);
+        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,cData.callData, success);
 
     }
 
