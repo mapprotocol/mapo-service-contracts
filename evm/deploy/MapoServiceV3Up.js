@@ -18,6 +18,8 @@ module.exports = async function ({ethers, deployments}) {
     let proxy = await deployments.get("MapoServiceProxyV3");
     let mosProxy = await ethers.getContractAt('MapoServiceV3', proxy.address);
 
+    console.log("MapoServiceV3 proxy address:", proxy.address);
+
     await (await mosProxy.upgradeTo(mos.address)).wait();
 
     console.log("MapoServiceV3 up success")
