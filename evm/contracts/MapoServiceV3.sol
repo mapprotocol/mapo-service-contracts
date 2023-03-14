@@ -13,16 +13,12 @@ import "./interface/IFeeService.sol";
 import "./interface/IMOSV3.sol";
 import "./interface/ILightNode.sol";
 import "./utils/TransferHelper.sol";
-import "./utils/RLPReader.sol";
 import "./utils/Utils.sol";
 import "./utils/EvmDecoder.sol";
-import "hardhat/console.sol";
 
 
 contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPSUpgradeable {
     using SafeMath for uint;
-    using RLPReader for bytes;
-    using RLPReader for RLPReader.RLPItem;
     using Address for address;
 
     uint public immutable selfChainId = block.chainid;
@@ -41,16 +37,16 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     mapping(uint256 => mapping(address => bool)) public tokenMappingList;
     mapping(uint256 => chainType) public chainTypes;
     mapping(address => bool) public messageWhiteList;
+    mapping(address => mapping(bytes => bool)) relationList;
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
     event SetLightClient(address _lightNode);
     event SetFeeService(address feeServiceAddress);
     event SetRelayContract(uint256 _chainId, address _relay);
-    event RegisterChain(address _token, uint _toChain, bool _enable);
     event AddWhiteList(address _messageAddress, bool _enable);
 
     function initialize(address _wToken, address _lightNode)
-    public initializer checkAddress(_wToken) checkAddress(_lightNode) {
+    public initializer virtual checkAddress(_wToken) checkAddress(_lightNode) {
         wToken = _wToken;
         lightNode = ILightNode(_lightNode);
         _changeAdmin(msg.sender);
@@ -100,13 +96,6 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     }
 
 
-    function registerChain(address _token, uint _toChain, bool _enable) external onlyOwner {
-
-        tokenMappingList[_toChain][_token] = _enable;
-
-        emit RegisterChain(_token,_toChain,_enable);
-    }
-
     function setRelayContract(uint256 _chainId, address _relay) external onlyOwner checkAddress(_relay) {
         relayContract = _relay;
         relayChainId = _chainId;
@@ -117,6 +106,16 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
 
         messageWhiteList[_messageAddress] = _enable;
         emit AddWhiteList(_messageAddress,_enable);
+    }
+
+    function addCorrespondence(bytes memory _targetAddress,bool _tag) external {
+        relationList[msg.sender][_targetAddress] = _tag;
+    }
+
+    function getCrossChainFee(uint256 _toChain,address _feeToken,uint256 _gasLimit) external view returns(uint256 amount) {
+        (uint256 baseLimit,uint256 chainPrice,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_feeToken);
+
+        amount = (baseLimit.add(_gasLimit)).mul(chainPrice);
     }
 
     function emergencyWithdraw(address _token, address payable _receiver, uint256 _amount) external onlyOwner checkAddress(_receiver) {
@@ -130,26 +129,22 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         }
     }
 
-    function transferOut(uint256 _toChain,CallData memory _callData) external  override
+    function transferOut(uint256 _toChain,MessageData memory _callData,address _feeToken) external  override
     payable
     nonReentrant
     whenNotPaused
-    checkBridgeable(Utils.fromBytes(_callData.target), _toChain)
     returns(bool)
     {
         require(_toChain != selfChainId, "Only other chain");
         require(_callData.gasLimit >= gasLimitMin ,"Execution gas too low");
         require(_callData.gasLimit <= gasLimitMax ,"Execution gas too high");
-        require(messageWhiteList[msg.sender],"Non-whitelisted address");
-
         require(_callData.value == 0,"Not supported at present value");
 
-        (uint256 fee,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_callData.target);
-        //require(fee > 0,"Address has no message fee");
-        uint256 amount = msg.value;
-        require(amount == fee, "Need message fee");
-        if (amount > 0) {
-            TransferHelper.safeTransferETH(receiverFeeAddress, amount);
+        uint256 amount = getCrossChainFee(_toChain,_feeToken,_callData.gasLimit);
+        require(msg.valu, "Need message fee");
+
+        if (msg.value > 0) {
+            TransferHelper.safeTransferETH(receiverFeeAddress, msg.value);
         }
 
         bytes32 orderId = _getOrderID(msg.sender, _callData.target, _toChain);
@@ -163,7 +158,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     }
 
 
-    function transferIn(uint256 _chainId, bytes memory _receiptProof) external nonReentrant whenNotPaused {
+    function transferIn(uint256 _chainId, bytes memory _receiptProof) external virtual nonReentrant whenNotPaused {
         require(_chainId == relayChainId, "invalid chain id");
         (bool sucess, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
         require(sucess, message);
