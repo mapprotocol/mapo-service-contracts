@@ -11,29 +11,26 @@ interface IMOSV3 {
     }
 
     enum msgType {
-        MESSAGE,
-        CALLDATA
+        CALLDATA,
+        MESSAGE
     }
 
-    struct CallData {
+
+    struct MessageData {
+        msgType mosType;
         bytes target;
         bytes callData;
         uint256 gasLimit;
         uint256 value;
     }
 
-    struct MessageData {
-        msgType msgType;
-        bytes target;
-        bytes payload;
-        uint256 gasLimit;
-        uint256 value;
-    }
-
     function transferOut(uint256 _toChain,MessageData memory _messageData,address _feeToken) external payable  returns(bool);
+
+    function addCorrespondence(bytes memory _targetAddress,bool _tag) external;
 
     event mapMessageOut(uint256 indexed fromChain, uint256 indexed toChain,bytes32 orderId, bytes fromAddrss, bytes callData);
 
     event mapMessageIn(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData, bool executeTag);
 
+    event mapMessageInError(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData, bytes reason);
 }

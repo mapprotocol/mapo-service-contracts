@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IFeeService.sol";
 import "./interface/IMOSV3.sol";
 import "./interface/ILightNode.sol";
+import "./interface/IMapoExcute.sol";
 import "./utils/TransferHelper.sol";
 import "./utils/Utils.sol";
 import "./utils/EvmDecoder.sol";
@@ -31,13 +32,19 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     ILightNode public lightNode;
     IFeeService public feeService;
 
+    struct StoredCalldata {
+        bytes callData;
+        bytes targetAddress;
+        bytes32 orderId;
+    }
 
 
     mapping(bytes32 => bool) public orderList;
     mapping(uint256 => mapping(address => bool)) public tokenMappingList;
     mapping(uint256 => chainType) public chainTypes;
     mapping(address => bool) public messageWhiteList;
-    mapping(address => mapping(bytes => bool)) relationList;
+    mapping(address => mapping(bytes => bool)) public relationList;
+    mapping(uint256 => mapping(bytes => StoredCalldata) ) public storedCalldataList;
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
     event SetLightClient(address _lightNode);
@@ -63,7 +70,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     }
 
     modifier checkBridgeable(address _token, uint _chainId) {
-        require(tokenMappingList[_chainId][_token], "token not registered");
+        require(tokenMappingList[_chainId][_token], " not registered");
         _;
     }
 
@@ -108,14 +115,15 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         emit AddWhiteList(_messageAddress,_enable);
     }
 
-    function addCorrespondence(bytes memory _targetAddress,bool _tag) external {
+    function addCorrespondence(bytes memory _targetAddress,bool _tag) external override {
         relationList[msg.sender][_targetAddress] = _tag;
     }
 
-    function getCrossChainFee(uint256 _toChain,address _feeToken,uint256 _gasLimit) external view returns(uint256 amount) {
+    function getCrossChainFee(uint256 _toChain,address _feeToken,uint256 _gasLimit) public view returns(uint256 amount,address receiverAddress) {
         (uint256 baseLimit,uint256 chainPrice,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_feeToken);
 
         amount = (baseLimit.add(_gasLimit)).mul(chainPrice);
+        receiverAddress = receiverFeeAddress;
     }
 
     function emergencyWithdraw(address _token, address payable _receiver, uint256 _amount) external onlyOwner checkAddress(_receiver) {
@@ -129,31 +137,36 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         }
     }
 
-    function transferOut(uint256 _toChain,MessageData memory _callData,address _feeToken) external  override
+    function transferOut(uint256 _toChain,MessageData memory _messageData,address _feeToken) external  override
     payable
     nonReentrant
     whenNotPaused
     returns(bool)
     {
         require(_toChain != selfChainId, "Only other chain");
-        require(_callData.gasLimit >= gasLimitMin ,"Execution gas too low");
-        require(_callData.gasLimit <= gasLimitMax ,"Execution gas too high");
-        require(_callData.value == 0,"Not supported at present value");
+        require(_messageData.gasLimit >= gasLimitMin ,"Execution gas too low");
+        require(_messageData.gasLimit <= gasLimitMax ,"Execution gas too high");
+        require(_messageData.value == 0,"Not supported at present value");
 
-        uint256 amount = getCrossChainFee(_toChain,_feeToken,_callData.gasLimit);
-        require(msg.valu, "Need message fee");
+        (uint256 amount,address receiverFeeAddress)= getCrossChainFee(_toChain,_feeToken,_messageData.gasLimit);
+        if(_feeToken == address(0)){
+            require(msg.value >= amount , "Need message fee");
 
-        if (msg.value > 0) {
-            TransferHelper.safeTransferETH(receiverFeeAddress, msg.value);
+            if (msg.value > 0) {
+                TransferHelper.safeTransferETH(receiverFeeAddress, msg.value);
+            }
+        }else {
+            TransferHelper.safeTransferFrom(_feeToken,tx.origin,receiverFeeAddress,amount);
         }
 
-        bytes32 orderId = _getOrderID(msg.sender, _callData.target, _toChain);
+
+        bytes32 orderId = _getOrderID(msg.sender, _messageData.target, _toChain);
 
         bytes memory fromAddress = Utils.toBytes(msg.sender);
 
-        bytes memory callData = abi.encode(_callData);
+        bytes memory messageData = abi.encode(_messageData);
 
-        emit mapMessageOut(selfChainId, _toChain, orderId, fromAddress,callData);
+        emit mapMessageOut(selfChainId, _toChain, orderId, fromAddress,messageData);
         return true;
     }
 
@@ -181,17 +194,32 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
 
     function _messageIn(IEvent.dataOutEvent memory _outEvent) internal checkOrder(_outEvent.orderId)  {
 
-        CallData memory cData = abi.decode(_outEvent.cData,(CallData));
+        MessageData memory mData = abi.decode(_outEvent.messageData,(MessageData));
 
-        address callDataAddress = Utils.fromBytes(cData.target);
+        address callDataAddress = Utils.fromBytes(mData.target);
+        if(mData.mosType == msgType.CALLDATA && relationList[callDataAddress][_outEvent.fromAddress]){
+            (bool success,bytes memory reason) = callDataAddress.call{gas:mData.gasLimit}(mData.callData);
+            if(!success){
 
-        bool success;
+                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, success);
 
-        if(messageWhiteList[callDataAddress]){
-            (success, ) = callDataAddress.call{gas:cData.gasLimit}(cData.callData);
+            }else{
+                storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
+                emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+            }
+        }else if(mData.mosType == msgType.MESSAGE){
+
+            try IMapoExcute(callDataAddress).mapoExcute{gas:mData.gasLimit}(_outEvent.fromChain,_outEvent.fromAddress,_outEvent.orderId,mData.callData) {
+
+                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, true);
+
+            } catch (bytes memory reason) {
+
+                storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
+                emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+            }
         }
 
-        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,cData.callData, success);
 
     }
 

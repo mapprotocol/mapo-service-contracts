@@ -24,8 +24,8 @@ contract FeeService is IFeeService,Ownable {
         emit SetBaseGasLimit(_chainId,_basLimit);
     }
 
-    function setChainGasPrice(uint256 _chainId,uint256 _chainPrice) external onlyOwner {
-        chainGasPrice[_chainId] = _chainPrice;
+    function setChainGasPrice(uint256 _chainId,address _token,uint256 _chainPrice) external onlyOwner {
+        chainGasPrice[_chainId][_token] = _chainPrice;
         emit SetChainGasPrice(_chainId,_chainPrice);
     }
 
