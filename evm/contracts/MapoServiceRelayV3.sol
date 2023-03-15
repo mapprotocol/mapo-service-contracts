@@ -6,7 +6,6 @@ import "./MapoServiceV3.sol";
 import "./interface/ILightClientManager.sol";
 import "./utils/NearDecoder.sol";
 
-
 contract MapoServiceRelayV3 is MapoServiceV3 {
 
     ILightClientManager public lightClientManager;
@@ -72,21 +71,32 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
 
         if(_outEvent.toChain == selfChainId){
 
-            CallData memory cData = abi.decode(_outEvent.cData,(CallData));
+            MessageData memory mData = abi.decode(_outEvent.messageData,(MessageData));
 
-            address callDataAddress = Utils.fromBytes(cData.target);
+            address callDataAddress = Utils.fromBytes(mData.target);
+            if(mData.mosType == msgType.CALLDATA && relationList[callDataAddress][_outEvent.fromAddress]){
+                (bool success,bytes memory reason) = callDataAddress.call{gas:mData.gasLimit}(mData.callData);
+                if(!success){
 
-            bool success;
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, success);
 
-            if(messageWhiteList[callDataAddress]){
-                (success, ) = callDataAddress.call{gas:cData.gasLimit}(cData.callData);
+                }else{
+                    storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
+                    emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+                }
+            }else if(mData.mosType == msgType.MESSAGE){
+                try IMapoExcute(callDataAddress).mapoExcute{gas:mData.gasLimit}(_outEvent.fromChain,_outEvent.fromAddress,_outEvent.orderId,mData.callData) {
+
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, true);
+
+                } catch (bytes memory reason) {
+
+                    storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
+                    emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+                }
             }
-
-            emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,cData.callData,success);
-
         }else{
-
-            emit mapMessageOut(selfChainId,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,_outEvent.cData);
+            emit mapMessageOut(selfChainId,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,_outEvent.messageData);
         }
     }
 

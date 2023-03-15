@@ -26,7 +26,7 @@ interface IEvent {
         uint256 fromChain;
         uint256 toChain;
         bytes fromAddress;
-        bytes cData;
+        bytes messageData;
     }
 
 }

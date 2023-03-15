@@ -1,20 +1,30 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../interface/IMapoExcute.sol";
 
 interface IMapoService {
-    struct CallData {
+    enum msgType {
+        CALLDATA,
+        MESSAGE
+    }
+
+
+    struct MessageData {
+        msgType mosType;
         bytes target;
         bytes callData;
         uint256 gasLimit;
         uint256 value;
     }
 
-    function transferOut(uint256 _toChain,CallData memory _callData) external payable  returns(bool);
 
+    function transferOut(uint256 _toChain,MessageData memory _messageData,address _feeToken) external payable  returns(bool);
+
+    function addCorrespondence(bytes memory _targetAddress,bool _tag) external;
 }
 
-contract Echo is Ownable {
+contract Echo is Ownable,IMapoExcute {
 
     address MapoService;
 
@@ -35,6 +45,11 @@ contract Echo is Ownable {
         data = abi.encodeWithSelector(Echo.setList.selector,_key,_val);
     }
 
+    function getMessageData(string memory _key,string memory _val) public view returns(bytes memory data){
+
+        data = abi.encode(_key,_val);
+    }
+
     function setWhiteList(address _executeAddress) external onlyOwner {
         WhiteList[_executeAddress] = true;
     }
@@ -51,14 +66,31 @@ contract Echo is Ownable {
 
         bytes memory data = getData(_key,_val);
 
-        IMapoService.CallData memory cData = IMapoService.CallData(_target,data,500000,0);
+        IMapoService.MessageData memory mData = IMapoService.MessageData(IMapoService.msgType.CALLDATA,_target,data,500000,0);
 
         require(
             IMapoService(MapoService).transferOut(
                 _tochainId,
-                cData
+                mData,
+                address(0)
             ),
             "Greeting fail"
         );
     }
+
+    function addCorrespondence(bytes memory _targetAddress,bool _tag) external  onlyOwner{
+
+        IMapoService(MapoService).addCorrespondence(_targetAddress,_tag);
+    }
+
+
+    function mapoExcute(uint256 _srcChainId, bytes calldata _fromAddress, bytes32 _orgerId, bytes calldata _callData) external override {
+
+        (string memory key,string memory value)  = abi.decode(_callData,(string,string));
+
+        EchoList[key] = value;
+
+    }
+
+
 }
