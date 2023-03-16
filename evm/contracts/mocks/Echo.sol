@@ -84,7 +84,7 @@ contract Echo is Ownable, IMapoExecutor {
     }
 
 
-    function mapoExecute(uint256 _srcChainId, bytes calldata _fromAddress, bytes32 _orderId, bytes calldata _message) external override {
+    function mapoExecute(uint256 _fromChain, uint256 _toChain, bytes calldata _fromAddress, bytes32 _orderId, bytes calldata _message) external override {
 
         (string memory key,string memory value)  = abi.decode(_message,(string,string));
 

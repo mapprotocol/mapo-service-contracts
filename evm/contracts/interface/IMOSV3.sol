@@ -17,6 +17,7 @@ interface IMOSV3 {
 
 
     struct MessageData {
+        bool relay;
         MessageType msgType;
         bytes target;
         bytes payload;
