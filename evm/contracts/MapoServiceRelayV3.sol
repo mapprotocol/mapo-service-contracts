@@ -13,7 +13,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
     mapping(uint256 => bytes) public mosContracts;
 
     event SetLightClientManager(address lightClient);
-    event RegisterChain(uint256 _chainId, bytes _address, chainType _type);
+    event RegisterChain(uint256 _chainId, bytes _address, ChainType _type);
 
     function initialize(address _wToken, address _managerAddress) public override initializer
     checkAddress(_wToken) checkAddress(_managerAddress) {
@@ -27,7 +27,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
         emit SetLightClientManager(_managerAddress);
     }
 
-    function registerChain(uint256 _chainId, bytes memory _address, chainType _type) external onlyOwner {
+    function registerChain(uint256 _chainId, bytes memory _address, ChainType _type) external onlyOwner {
         mosContracts[_chainId] = _address;
         chainTypes[_chainId] = _type;
         emit RegisterChain(_chainId, _address, _type);
@@ -36,7 +36,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
     function transferIn(uint256 _chainId, bytes memory _receiptProof) external override nonReentrant whenNotPaused {
         (bool success,string memory message,bytes memory logArray) = lightClientManager.verifyProofData(_chainId, _receiptProof);
         require(success, message);
-        if (chainTypes[_chainId] == chainType.NEAR) {
+        if (chainTypes[_chainId] == ChainType.NEAR) {
             (bytes memory mosContract, IEvent.transferOutEvent[] memory outEvents) = NearDecoder.decodeNearLog(logArray);
             for (uint i = 0; i < outEvents.length; i++) {
                 IEvent.transferOutEvent memory outEvent = outEvents[i];
@@ -44,7 +44,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 require(Utils.checkBytes(mosContract, mosContracts[_chainId]), "invalid mos contract");
                 // TODO
             }
-        } else if (chainTypes[_chainId] == chainType.EVM) {
+        } else if (chainTypes[_chainId] == ChainType.EVM) {
             IEvent.txLog[] memory logs = EvmDecoder.decodeTxLogs(logArray);
             for (uint256 i = 0; i < logs.length; i++) {
                 IEvent.txLog memory log = logs[i];
@@ -71,28 +71,28 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
 
         if(_outEvent.toChain == selfChainId){
 
-            MessageData memory mData = abi.decode(_outEvent.messageData,(MessageData));
+            MessageData memory msgData = abi.decode(_outEvent.messageData,(MessageData));
 
-            address callDataAddress = Utils.fromBytes(mData.target);
-            if(mData.mosType == msgType.CALLDATA && relationList[callDataAddress][_outEvent.fromAddress]){
-                (bool success,bytes memory reason) = callDataAddress.call{gas:mData.gasLimit}(mData.callData);
-                if(!success){
+            address target = Utils.fromBytes(msgData.target);
+            if (msgData.msgType == MessageType.CALLDATA && callerList[target][_chainId][_outEvent.fromAddress]){
+                (bool success,bytes memory reason) = target.call{gas: msgData.gasLimit}(msgData.payload);
+                if(success){
 
-                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, success);
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
 
                 }else{
-                    storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
-                    emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+                    //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
                 }
-            }else if(mData.mosType == msgType.MESSAGE){
-                try IMapoExcute(callDataAddress).mapoExcute{gas:mData.gasLimit}(_outEvent.fromChain,_outEvent.fromAddress,_outEvent.orderId,mData.callData) {
+            }else if(msgData.msgType == MessageType.MESSAGE){
+                try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain,_outEvent.fromAddress,_outEvent.orderId, msgData.payload) {
 
-                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, true);
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
 
                 } catch (bytes memory reason) {
 
-                    storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
-                    emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+                    //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
                 }
             }
         }else{

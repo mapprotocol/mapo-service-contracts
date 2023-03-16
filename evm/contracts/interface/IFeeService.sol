@@ -6,5 +6,5 @@ interface IFeeService {
     function getMessageFee(uint256 _chainId,address _feeToken)
     external
     view
-    returns(uint256 feeValue,uint256 chainPrice,address receiverAddress);
+    returns(uint256 _base,uint256 _gasPrice,address _receiverAddress);
 }

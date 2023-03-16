@@ -1,7 +1,7 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interface/IMapoExcute.sol";
+import "../interface/IMapoExecutor.sol";
 
 interface IMapoService {
     enum msgType {
@@ -24,7 +24,7 @@ interface IMapoService {
     function addCorrespondence(bytes memory _targetAddress,bool _tag) external;
 }
 
-contract Echo is Ownable,IMapoExcute {
+contract Echo is Ownable, IMapoExecutor {
 
     address MapoService;
 
@@ -84,9 +84,9 @@ contract Echo is Ownable,IMapoExcute {
     }
 
 
-    function mapoExcute(uint256 _srcChainId, bytes calldata _fromAddress, bytes32 _orgerId, bytes calldata _callData) external override {
+    function mapoExecute(uint256 _srcChainId, bytes calldata _fromAddress, bytes32 _orderId, bytes calldata _message) external override {
 
-        (string memory key,string memory value)  = abi.decode(_callData,(string,string));
+        (string memory key,string memory value)  = abi.decode(_message,(string,string));
 
         EchoList[key] = value;
 

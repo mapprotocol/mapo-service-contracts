@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IFeeService.sol";
 import "./interface/IMOSV3.sol";
 import "./interface/ILightNode.sol";
-import "./interface/IMapoExcute.sol";
+import "./interface/IMapoExecutor.sol";
 import "./utils/TransferHelper.sol";
 import "./utils/Utils.sol";
 import "./utils/EvmDecoder.sol";
@@ -40,17 +40,14 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
 
 
     mapping(bytes32 => bool) public orderList;
-    mapping(uint256 => mapping(address => bool)) public tokenMappingList;
-    mapping(uint256 => chainType) public chainTypes;
-    mapping(address => bool) public messageWhiteList;
-    mapping(address => mapping(bytes => bool)) public relationList;
-    mapping(uint256 => mapping(bytes => StoredCalldata) ) public storedCalldataList;
+    mapping(uint256 => ChainType) public chainTypes;
+    mapping(address => mapping(uint256 => mapping(bytes => bool))) public callerList;
+    //mapping(uint256 => mapping(bytes => StoredCalldata) ) public storedCalldataList;
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
     event SetLightClient(address _lightNode);
     event SetFeeService(address feeServiceAddress);
     event SetRelayContract(uint256 _chainId, address _relay);
-    event AddWhiteList(address _messageAddress, bool _enable);
 
     function initialize(address _wToken, address _lightNode)
     public initializer virtual checkAddress(_wToken) checkAddress(_lightNode) {
@@ -59,18 +56,11 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         _changeAdmin(msg.sender);
     }
 
-
     receive() external payable {}
-
 
     modifier checkOrder(bytes32 _orderId) {
         require(!orderList[_orderId], "order exist");
         orderList[_orderId] = true;
-        _;
-    }
-
-    modifier checkBridgeable(address _token, uint _chainId) {
-        require(tokenMappingList[_chainId][_token], " not registered");
         _;
     }
 
@@ -109,21 +99,12 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         emit SetRelayContract(_chainId,_relay);
     }
 
-    function addWhiteList(address _messageAddress,bool _enable) external onlyOwner {
-
-        messageWhiteList[_messageAddress] = _enable;
-        emit AddWhiteList(_messageAddress,_enable);
+    function addRemoteCaller(uint256 _fromChain, bytes memory _fromAddress, bool _tag) external override {
+        callerList[msg.sender][_fromChain][_fromAddress] = _tag;
     }
 
-    function addCorrespondence(bytes memory _targetAddress,bool _tag) external override {
-        relationList[msg.sender][_targetAddress] = _tag;
-    }
-
-    function getCrossChainFee(uint256 _toChain,address _feeToken,uint256 _gasLimit) public view returns(uint256 amount,address receiverAddress) {
-        (uint256 baseLimit,uint256 chainPrice,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_feeToken);
-
-        amount = (baseLimit.add(_gasLimit)).mul(chainPrice);
-        receiverAddress = receiverFeeAddress;
+    function getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) external override view returns(uint256 amount, address receiverAddress) {
+        (amount, receiverAddress) = _getMessageFee(_toChain, _feeToken, _gasLimit);
     }
 
     function emergencyWithdraw(address _token, address payable _receiver, uint256 _amount) external onlyOwner checkAddress(_receiver) {
@@ -137,18 +118,24 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         }
     }
 
-    function transferOut(uint256 _toChain,MessageData memory _messageData,address _feeToken) external  override
+    function transferOut(uint256 _toChain, bytes memory _messageData, address _feeToken) external  override
     payable
     nonReentrant
     whenNotPaused
     returns(bool)
     {
         require(_toChain != selfChainId, "Only other chain");
-        require(_messageData.gasLimit >= gasLimitMin ,"Execution gas too low");
-        require(_messageData.gasLimit <= gasLimitMax ,"Execution gas too high");
-        require(_messageData.value == 0,"Not supported at present value");
 
-        (uint256 amount,address receiverFeeAddress)= getCrossChainFee(_toChain,_feeToken,_messageData.gasLimit);
+        MessageData memory msgData = abi.decode(_messageData,(MessageData));
+
+        require(msgData.gasLimit >= gasLimitMin ,"Execution gas too low");
+        require(msgData.gasLimit <= gasLimitMax ,"Execution gas too high");
+        require(msgData.value == 0,"Not supported msg value");
+
+        // TODO: check payload length
+        // TODO: check target address
+
+        (uint256 amount,address receiverFeeAddress)= _getMessageFee(_toChain, _feeToken, msgData.gasLimit);
         if(_feeToken == address(0)){
             require(msg.value >= amount , "Need message fee");
 
@@ -156,17 +143,17 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
                 TransferHelper.safeTransferETH(receiverFeeAddress, msg.value);
             }
         }else {
-            TransferHelper.safeTransferFrom(_feeToken,tx.origin,receiverFeeAddress,amount);
+            TransferHelper.safeTransferFrom(_feeToken, msg.sender, receiverFeeAddress, amount);
         }
 
-
-        bytes32 orderId = _getOrderID(msg.sender, _messageData.target, _toChain);
+        bytes32 orderId = _getOrderID(msg.sender, msgData.target, _toChain);
 
         bytes memory fromAddress = Utils.toBytes(msg.sender);
 
-        bytes memory messageData = abi.encode(_messageData);
+        //bytes memory messageData = abi.encode(_messageData);
 
-        emit mapMessageOut(selfChainId, _toChain, orderId, fromAddress,messageData);
+        emit mapMessageOut(selfChainId, _toChain, orderId, fromAddress, _messageData);
+
         return true;
     }
 
@@ -175,8 +162,8 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         require(_chainId == relayChainId, "invalid chain id");
         (bool sucess, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
         require(sucess, message);
-        IEvent.txLog[] memory logs = EvmDecoder.decodeTxLogs(logArray);
 
+        IEvent.txLog[] memory logs = EvmDecoder.decodeTxLogs(logArray);
         for (uint i = 0; i < logs.length; i++) {
             IEvent.txLog memory log = logs[i];
             bytes32 topic = abi.decode(log.topics[0], (bytes32));
@@ -194,29 +181,29 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
 
     function _messageIn(IEvent.dataOutEvent memory _outEvent) internal checkOrder(_outEvent.orderId)  {
 
-        MessageData memory mData = abi.decode(_outEvent.messageData,(MessageData));
+        MessageData memory msgData = abi.decode(_outEvent.messageData,(MessageData));
 
-        address callDataAddress = Utils.fromBytes(mData.target);
-        if(mData.mosType == msgType.CALLDATA && relationList[callDataAddress][_outEvent.fromAddress]){
-            (bool success,bytes memory reason) = callDataAddress.call{gas:mData.gasLimit}(mData.callData);
-            if(!success){
+        address target = Utils.fromBytes(msgData.target);
+        if(msgData.msgType == MessageType.CALLDATA && callerList[target][_outEvent.fromChain][_outEvent.fromAddress]){
+            (bool success,bytes memory reason) = target.call{gas: msgData.gasLimit}(msgData.payload);
+            if(success){
 
-                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, success);
+                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
 
             }else{
-                storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
-                emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+                //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
+                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
             }
-        }else if(mData.mosType == msgType.MESSAGE){
+        }else if(msgData.msgType == MessageType.MESSAGE){
 
-            try IMapoExcute(callDataAddress).mapoExcute{gas:mData.gasLimit}(_outEvent.fromChain,_outEvent.fromAddress,_outEvent.orderId,mData.callData) {
+            try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain,_outEvent.fromAddress,_outEvent.orderId, msgData.payload) {
 
-                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, true);
+                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
 
             } catch (bytes memory reason) {
 
-                storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(mData.callData, mData.target, _outEvent.orderId);
-                emit mapMessageInError(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,mData.callData, reason);
+                //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
+                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
             }
         }
 
@@ -225,6 +212,13 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
 
     function _getOrderID(address _from, bytes memory _to, uint _toChain) internal returns (bytes32){
         return keccak256(abi.encodePacked(address(this), nonce++, selfChainId, _toChain, _from, _to));
+    }
+
+    function _getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) internal view returns(uint256 amount, address receiverAddress) {
+        (uint256 baseGas,uint256 chainPrice,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_feeToken);
+
+        amount = (baseGas.add(_gasLimit)).mul(chainPrice);
+        receiverAddress = receiverFeeAddress;
     }
 
     /** UUPS *********************************************************/
