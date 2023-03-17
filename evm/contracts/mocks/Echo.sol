@@ -3,25 +3,29 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interface/IMapoExecutor.sol";
 
+
 interface IMapoService {
-    enum msgType {
+    enum MessageType {
         CALLDATA,
         MESSAGE
     }
 
 
     struct MessageData {
-        msgType mosType;
+        bool relay;
+        MessageType msgType;
         bytes target;
-        bytes callData;
+        bytes payload;
         uint256 gasLimit;
         uint256 value;
     }
 
+    function getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) external view returns(uint256, address);
 
-    function transferOut(uint256 _toChain,MessageData memory _messageData,address _feeToken) external payable  returns(bool);
+    function transferOut(uint256 _toChain, bytes memory _messageData,address _feeToken) external payable  returns(bool);
 
-    function addCorrespondence(bytes memory _targetAddress,bool _tag) external;
+
+    function addRemoteCaller(uint256 _fromChain, bytes memory _fromAddress,bool _tag) external;
 }
 
 contract Echo is Ownable, IMapoExecutor {
@@ -50,6 +54,11 @@ contract Echo is Ownable, IMapoExecutor {
         data = abi.encode(_key,_val);
     }
 
+    function getMessageBytes(IMapoService.MessageData memory mData) public view returns(bytes memory data){
+
+        data = abi.encode(mData);
+    }
+
     function setWhiteList(address _executeAddress) external onlyOwner {
         WhiteList[_executeAddress] = true;
     }
@@ -66,7 +75,9 @@ contract Echo is Ownable, IMapoExecutor {
 
         bytes memory data = getData(_key,_val);
 
-        IMapoService.MessageData memory mData = IMapoService.MessageData(IMapoService.msgType.CALLDATA,_target,data,500000,0);
+        //IMapoService.MessageData memory mData = IMapoService.MessageData(false,IMapoService.MessageType.CALLDATA,_target,data,500000,0);
+
+        bytes memory mData = abi.encode(false,IMapoService.MessageType.CALLDATA,_target,data,500000,0);
 
         require(
             IMapoService(MapoService).transferOut(
@@ -78,9 +89,9 @@ contract Echo is Ownable, IMapoExecutor {
         );
     }
 
-    function addCorrespondence(bytes memory _targetAddress,bool _tag) external  onlyOwner{
+    function addCorrespondence(uint256 _fromChain,bytes memory _targetAddress,bool _tag) external  onlyOwner{
 
-        IMapoService(MapoService).addCorrespondence(_targetAddress,_tag);
+        IMapoService(MapoService).addRemoteCaller(_fromChain,_targetAddress,_tag);
     }
 
 
