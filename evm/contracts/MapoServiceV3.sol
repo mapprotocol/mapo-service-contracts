@@ -32,17 +32,10 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     ILightNode public lightNode;
     IFeeService public feeService;
 
-    struct StoredCalldata {
-        bytes callData;
-        bytes targetAddress;
-        bytes32 orderId;
-    }
-
-
     mapping(bytes32 => bool) public orderList;
     mapping(uint256 => ChainType) public chainTypes;
     mapping(address => mapping(uint256 => mapping(bytes => bool))) public callerList;
-    //mapping(uint256 => mapping(bytes => StoredCalldata) ) public storedCalldataList;
+
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
     event SetLightClient(address _lightNode);
@@ -53,7 +46,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     public initializer virtual checkAddress(_wToken) checkAddress(_lightNode) {
         wToken = _wToken;
         lightNode = ILightNode(_lightNode);
-        _changeAdmin(msg.sender);
+        _changeAdmin(tx.origin);
     }
 
     receive() external payable {}
