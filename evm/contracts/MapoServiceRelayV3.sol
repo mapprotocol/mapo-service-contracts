@@ -15,11 +15,16 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
     event SetLightClientManager(address lightClient);
     event RegisterChain(uint256 _chainId, bytes _address, ChainType _type);
 
-    function initialize(address _wToken, address _managerAddress) public override initializer
-    checkAddress(_wToken) checkAddress(_managerAddress) {
+    function initialize(address _wToken, address _managerAddress)
+    public
+    override
+    initializer
+    checkAddress(_wToken)
+    checkAddress(_managerAddress)
+    {
         wToken = _wToken;
         lightClientManager = ILightClientManager(_managerAddress);
-        _changeAdmin(msg.sender);
+        _changeAdmin(tx.origin);
     }
 
     function setLightClientManager(address _managerAddress) external onlyOwner checkAddress(_managerAddress) {
@@ -96,7 +101,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 }
             }
         }else{
-            emit mapMessageOut(selfChainId,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,_outEvent.messageData);
+            emit mapMessageOut(_outEvent.fromChain,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,_outEvent.messageData);
         }
     }
 

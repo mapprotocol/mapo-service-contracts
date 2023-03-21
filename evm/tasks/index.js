@@ -6,6 +6,14 @@ task("mosDeploy",
     .addParam("wrapped", "native wrapped token address")
     .addParam("lightnode", "lightNode contract address")
 
+task("mosDeployCreate3",
+    "Deploy the upgradeable MOS contract and initialize it",
+    require("./mosDeployCreate3")
+)
+    .addParam("wrapped", "native wrapped token address")
+    .addParam("lightnode", "lightNode contract address")
+    .addOptionalParam("salt", "deploy contract salt","MOSV3" , types.string)
+
 task("relayDeploy",
     "Deploy the upgradeable MOSRelay contract and initialize it",
     require("./relayDeploy")
@@ -14,12 +22,30 @@ task("relayDeploy",
     .addParam("lightnode", "lightNodeManager contract address")
 
 
+
+task("relayDeployCreate3",
+    "Deploy the upgradeable MOSRelay contract and initialize it",
+    require("./relayDeployCreate3")
+)
+    .addParam("wrapped", "native wrapped token address")
+    .addParam("lightnode", "lightNodeManager contract address")
+    .addOptionalParam("salt", "deploy contract salt","MOSV3" , types.string)
+
+
 task("mosSetRelay",
     "Initialize MOSRelay address for MOS",
     require("./mosSetRelay")
 )
     .addParam("relay", "map chain relay contract address")
     .addParam("chain", "map chain id")
+
+task("mosSetRelayCreate3",
+    "Initialize MOSRelay address for MOS",
+    require("./mosSetRelayCreate3")
+)
+    .addParam("relay", "map chain relay contract address")
+    .addParam("chain", "map chain id")
+    .addOptionalParam("mosAddress", "mos contract address","0x0000000000000000000000000000000000000000" , types.string)
 
 task("mosSetClient",
     "Set light client address for MOS",
@@ -51,6 +77,14 @@ task("relayRegisterChain",
     .addParam("chain", "chain id")
     .addOptionalParam("type", "chain type, default 1", 1, types.int)
 
+task("relayRegisterChainCreate3",
+    "Register altchain mos to relay chain",
+    require("./relayRegisterChainCreate3")
+)
+    .addParam("address", "mos contract address")
+    .addParam("chain", "chain id")
+    .addOptionalParam("type", "chain type, default 1", 1, types.int)
+    .addOptionalParam("mosAddress", "mos relay contract address","0x0000000000000000000000000000000000000000" , types.string)
 
 task("transferOut",
     "Cross-chain transfer out",
@@ -77,6 +111,13 @@ task("setFeeService",
     require("./setFeeService")
 )
     .addParam("address", "message fee address")
+
+task("setFeeServiceCreate3",
+    "Set message fee service address ",
+    require("./setFeeServiceCreate3")
+)
+    .addParam("address", "message fee address")
+    .addOptionalParam("mosAddress", "mos relay contract address","0x0000000000000000000000000000000000000000" , types.string)
 
 
 task("setMessageFee",

@@ -10,6 +10,7 @@ module.exports = async function ({ethers, deployments}) {
         args: [],
         log: true,
         contract: 'FeeService',
+        deterministicDeployment: true
     })
     let feeService = await ethers.getContract('FeeService');
     console.log("FeeService address:", feeService.address);
