@@ -12,7 +12,7 @@ task("mosDeployCreate3",
 )
     .addParam("wrapped", "native wrapped token address")
     .addParam("lightnode", "lightNode contract address")
-    .addOptionalParam("salt", "deploy contract salt","MOSV322161" , types.string)
+    .addOptionalParam("salt", "deploy contract salt","MOSV3" , types.string)
 
 task("relayDeploy",
     "Deploy the upgradeable MOSRelay contract and initialize it",
@@ -29,7 +29,7 @@ task("relayDeployCreate3",
 )
     .addParam("wrapped", "native wrapped token address")
     .addParam("lightnode", "lightNodeManager contract address")
-    .addOptionalParam("salt", "deploy contract salt","MOSV322161" , types.string)
+    .addOptionalParam("salt", "deploy contract salt","MOSV3" , types.string)
 
 
 task("mosSetRelay",
