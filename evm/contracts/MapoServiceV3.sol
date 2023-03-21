@@ -43,7 +43,12 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     event SetRelayContract(uint256 _chainId, address _relay);
 
     function initialize(address _wToken, address _lightNode)
-    public initializer virtual checkAddress(_wToken) checkAddress(_lightNode) {
+    public
+    virtual
+    initializer
+    checkAddress(_wToken)
+    checkAddress(_lightNode)
+    {
         wToken = _wToken;
         lightNode = ILightNode(_lightNode);
         _changeAdmin(tx.origin);

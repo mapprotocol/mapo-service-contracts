@@ -15,8 +15,13 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
     event SetLightClientManager(address lightClient);
     event RegisterChain(uint256 _chainId, bytes _address, ChainType _type);
 
-    function initialize(address _wToken, address _managerAddress) public override initializer
-    checkAddress(_wToken) checkAddress(_managerAddress) {
+    function initialize(address _wToken, address _managerAddress)
+    public
+    override
+    initializer
+    checkAddress(_wToken)
+    checkAddress(_managerAddress)
+    {
         wToken = _wToken;
         lightClientManager = ILightClientManager(_managerAddress);
         _changeAdmin(tx.origin);
