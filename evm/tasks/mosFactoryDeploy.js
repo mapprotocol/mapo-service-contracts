@@ -10,8 +10,7 @@ module.exports = async (taskArgs, hre) => {
         from: deployer.address,
         args: [],
         log: true,
-        contract: 'MapoServiceV3',
-        deterministicDeployment: true
+        contract: 'MapoServiceV3'
     })
 
    let mos = await ethers.getContract('MapoServiceV3');
@@ -28,18 +27,17 @@ module.exports = async (taskArgs, hre) => {
         [mos.address,data]
     )
 
-
     let deployData = mosProxy.bytecode + initData.substring(2);
-
-
+    console.log("mos salt:", taskArgs.salt);
     let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.salt));
 
-    let factory = await hre.deployments.get("DeployFactory");
-    let Factory = await ethers.getContractAt('DeployFactory', factory.address);
+    let factory = await ethers.getContractAt("IDeployFactory",taskArgs.factory)
 
-    await (await Factory.connect(deployer).deployFactory(hash,deployData,0)).wait();
+    console.log("deploy factory address:",factory.address)
 
-    let mosProxyAddress = await Factory.connect(deployer).getAddress(hash)
+    await (await factory.connect(deployer).deploy(hash,deployData,0)).wait();
+
+    let mosProxyAddress = await factory.connect(deployer).getAddress(hash)
 
     let proxy = await ethers.getContractAt('MapoServiceV3', mosProxyAddress);
 

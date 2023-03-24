@@ -5,14 +5,21 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    let proxy = await hre.deployments.get("FeeService");
+    console.log("fee salt:", taskArgs.feesalt);
 
-    console.log("FeeService address", proxy.address);
+    let factory = await ethers.getContractAt("IDeployFactory",taskArgs.factory)
 
-    let feeService = await ethers.getContractAt('FeeService', proxy.address);
+    console.log("deploy factory address:",factory.address)
 
-    await (await feeService.connect(deployer).setMessageFee(taskArgs.chainid,taskArgs.target,taskArgs.fee)).wait();
+    let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.feesalt));
 
-    console.log(` Set the fee for ${taskArgs.chainid} ${taskArgs.target} to ${taskArgs.fee} `);
+    let feeServiceAddress = await factory.getAddress(hash);
+
+    let feeService = await ethers.getContractAt('FeeService', feeServiceAddress);
+
+    await (await feeService.connect(deployer).setBaseGas(taskArgs.chainid,taskArgs.baselimit)).wait();
+    await (await feeService.connect(deployer).setChainGasPrice(taskArgs.chainid,taskArgs.tokenaddress,taskArgs.price)).wait();
+
+    console.log(`Fee service ${feeServiceAddress} set the fee for ${taskArgs.chainid} ${taskArgs.tokenaddress} to price is ${taskArgs.price} and  baselimit is ${taskArgs.baselimit}`);
 
 }

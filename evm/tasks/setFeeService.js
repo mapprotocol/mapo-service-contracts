@@ -5,14 +5,20 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    let proxy = await hre.deployments.get("MapoServiceProxyV3");
+    console.log("mos salt:", taskArgs.salt);
 
-    console.log("mos address", proxy.address);
+    let factory = await ethers.getContractAt("IDeployFactory",taskArgs.factory)
 
-    let mos = await ethers.getContractAt('MapoServiceV3', proxy.address);
+    console.log("deploy factory address:",factory.address)
+
+    let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.salt));
+
+    let mosAddress = await factory.getAddress(hash);
+
+    let mos = await ethers.getContractAt('MapoServiceV3',mosAddress);
 
     await (await mos.connect(deployer).setFeeService(taskArgs.address)).wait();
 
-    console.log(`mos set  message fee service address ${taskArgs.address} successfully `);
+    console.log(`mos ${mosAddress} set  message fee service address  ${taskArgs.address} successfully `);
 
 }
