@@ -1,3 +1,4 @@
+const { MOS_SALT,DEPLOY_FACTORY} = process.env;
 module.exports = async function ({ethers, deployments}) {
     const {deploy} = deployments
     const accounts = await ethers.getSigners()
@@ -14,11 +15,19 @@ module.exports = async function ({ethers, deployments}) {
     let mos = await ethers.getContract('MapoServiceV3');
     console.log("MapoServiceV3 address:", mos.address);
 
+    console.log("mos salt:", MOS_SALT);
 
-    let proxy = await deployments.get("MapoServiceProxyV3");
-    let mosProxy = await ethers.getContractAt('MapoServiceV3', proxy.address);
+    let factory = await ethers.getContractAt("IDeployFactory",DEPLOY_FACTORY)
 
-    console.log("MapoServiceV3 proxy address:", proxy.address);
+    console.log("deploy factory address:",factory.address)
+
+    let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(MOS_SALT));
+
+    let mosAddress = await factory.getAddress(hash);
+
+    let mosProxy = await ethers.getContractAt('MapoServiceV3', mosAddress);
+
+    console.log("MapoServiceV3 proxy address:", mosAddress);
 
     await (await mosProxy.upgradeTo(mos.address)).wait();
 

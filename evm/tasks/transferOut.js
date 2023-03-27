@@ -11,20 +11,25 @@ module.exports = async (taskArgs) => {
 
     console.log("deployer address:",deployer.address);
 
+    console.log("mos salt:", taskArgs.salt);
 
-    let mos = await ethers.getContractAt('IMOSV3',taskArgs.mos);
+    let factory = await ethers.getContractAt("IDeployFactory",taskArgs.factory)
+
+    console.log("deploy factory address:",factory.address)
+
+    let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.salt));
+
+    let mosAddress = await factory.getAddress(hash);
+
+    let mos = await ethers.getContractAt('IMOSV3',mosAddress);
+
+    let mDataBytes = await  ethers.utils.abiCoder.encode(false,0,taskArgs.target, taskArgs.calldata, taskArgs.gaslimit, taskArgs.value)
 
     await (await mos.connect(deployer).transferOut(
         taskArgs.chain,
-        [
-            taskArgs.target,
-            taskArgs.calldata,
-            taskArgs.gaslimit,
-            taskArgs.value
-        ]
+        mDataBytes,
+        "0x0000000000000000000000000000000000000000"
     )).wait();
 
-
-
-    console.log(`transfer out  ${taskArgs.target} to chain ${taskArgs.chain}  successful`);
+    console.log(`${mosAddress} transfer out  ${taskArgs.target} to chain ${taskArgs.chain}  successful`);
 }

@@ -13,7 +13,7 @@ describe("MAPO ServiceRelayV3 start test", () =>{
     let echo;
     let feeService;
 
-    async function deployRelayContractFixture() {
+    async function deployMosContractFixture() {
         [owner, addr1] = await ethers.getSigners();
 
         let relayContract = await ethers.getContractFactory("MapoServiceRelayV3");
@@ -40,7 +40,7 @@ describe("MAPO ServiceRelayV3 start test", () =>{
         relay = relayContract.attach(proxy.address);
 
         let feeContract = await ethers.getContractFactory("FeeService");
-        feeService = await  feeContract.deploy();
+        feeService = await  feeContract.deploy(owner.address);
         console.log("FeeService Relay address:",feeService.address)
 
         return {relay,echo,feeService,owner,addr1};
@@ -49,7 +49,7 @@ describe("MAPO ServiceRelayV3 start test", () =>{
     describe("",() =>{
         it('mosMessage relay set ', async function () {
 
-            let{relay,echo,feeService,owner,addr1} = await loadFixture(deployRelayContractFixture)
+            let{relay,echo,feeService,owner,addr1} = await loadFixture(deployMosContractFixture)
 
             await relay.registerChain(5,"0x5FC8d32690cc91D4c39d9d3abcBD16989F875707","1");
 

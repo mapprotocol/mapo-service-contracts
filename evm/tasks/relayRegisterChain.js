@@ -12,20 +12,26 @@ module.exports = async (taskArgs,hre) => {
 
     console.log("deployer address:",deployer.address);
 
-    let proxy = await hre.deployments.get("MapoServiceProxyV3")
+    console.log("mos salt:", taskArgs.salt);
 
-    console.log("mos address:", proxy.address);
+    let factory = await ethers.getContractAt("IDeployFactory",taskArgs.factory)
 
-    let mos = await ethers.getContractAt('MapoServiceRelayV3',proxy.address);
+    console.log("deploy factory address:",factory.address)
+
+    let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.salt));
+
+    let mosAddress = await factory.getAddress(hash);
+
+    let mos = await ethers.getContractAt('MapoServiceRelayV3',mosAddress);
 
     let address = taskArgs.address;
-    if (taskArgs.address.substr(0,2) != "0x") {
+    if (taskArgs.address.substring(0,2) !== "0x") {
         address = "0x" + stringToHex(taskArgs.address);
     }
 
     await (await mos.connect(deployer).registerChain(taskArgs.chain, address, taskArgs.type)).wait();
 
-    console.log(`mos register chain ${taskArgs.chain}  address ${address} success`);
+    console.log(`mos ${mosAddress} register chain ${taskArgs.chain}  address is ${address} success`);
 
 
 }

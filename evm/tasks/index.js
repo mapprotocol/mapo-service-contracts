@@ -1,35 +1,29 @@
+const { MOS_SALT,FEE_SALT,DEPLOY_FACTORY} = process.env;
 
-task("mosDeploy",
+task("feeFactoryDeploy",
     "Deploy the upgradeable MOS contract and initialize it",
-    require("./mosDeploy")
+    require("./feeFactoryDeploy")
+)
+    .addOptionalParam("feesalt", "deploy contract salt",FEE_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
+
+task("mosFactoryDeploy",
+    "Deploy the upgradeable MOS contract and initialize it",
+    require("./mosFactoryDeploy")
 )
     .addParam("wrapped", "native wrapped token address")
     .addParam("lightnode", "lightNode contract address")
+    .addOptionalParam("salt", "deploy contract salt",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
-task("mosDeployCreate3",
-    "Deploy the upgradeable MOS contract and initialize it",
-    require("./mosDeployCreate3")
-)
-    .addParam("wrapped", "native wrapped token address")
-    .addParam("lightnode", "lightNode contract address")
-    .addOptionalParam("salt", "deploy contract salt","MOSV3" , types.string)
-
-task("relayDeploy",
+task("relayFactoryDeploy",
     "Deploy the upgradeable MOSRelay contract and initialize it",
-    require("./relayDeploy")
+    require("./relayFactoryDeploy")
 )
     .addParam("wrapped", "native wrapped token address")
     .addParam("lightnode", "lightNodeManager contract address")
-
-
-
-task("relayDeployCreate3",
-    "Deploy the upgradeable MOSRelay contract and initialize it",
-    require("./relayDeployCreate3")
-)
-    .addParam("wrapped", "native wrapped token address")
-    .addParam("lightnode", "lightNodeManager contract address")
-    .addOptionalParam("salt", "deploy contract salt","MOSV3" , types.string)
+    .addOptionalParam("salt", "deploy contract salt",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 
 task("mosSetRelay",
@@ -38,29 +32,16 @@ task("mosSetRelay",
 )
     .addParam("relay", "map chain relay contract address")
     .addParam("chain", "map chain id")
-
-task("mosSetRelayCreate3",
-    "Initialize MOSRelay address for MOS",
-    require("./mosSetRelayCreate3")
-)
-    .addParam("relay", "map chain relay contract address")
-    .addParam("chain", "map chain id")
-    .addOptionalParam("mosAddress", "mos contract address","0x0000000000000000000000000000000000000000" , types.string)
+    .addOptionalParam("salt", "mos contract address",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 task("mosSetClient",
     "Set light client address for MOS",
     require("./mosSetClient")
 )
     .addParam("client", "light client address")
-
-
-task("mosRegisterChain",
-    "MOS settings allow cross-chain tokens",
-    require("./mosRegisterChain")
-)
-    .addParam("token", "token address")
-    .addParam("chains", "chain ids allowed to cross, separated by ',', ex. `1,2,3` ")
-    .addOptionalParam("enable", "true or false", true, types.boolean)
+    .addOptionalParam("salt", "mos contract address",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 
 task("relaySetClientManager",
@@ -68,6 +49,8 @@ task("relaySetClientManager",
     require("./relaySetClientManager")
 )
     .addParam("manager","client manager contract")
+    .addOptionalParam("salt", "mos contract address",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 task("relayRegisterChain",
     "Register altchain mos to relay chain",
@@ -76,34 +59,20 @@ task("relayRegisterChain",
     .addParam("address", "mos contract address")
     .addParam("chain", "chain id")
     .addOptionalParam("type", "chain type, default 1", 1, types.int)
-
-task("relayRegisterChainCreate3",
-    "Register altchain mos to relay chain",
-    require("./relayRegisterChainCreate3")
-)
-    .addParam("address", "mos contract address")
-    .addParam("chain", "chain id")
-    .addOptionalParam("type", "chain type, default 1", 1, types.int)
-    .addOptionalParam("mosAddress", "mos relay contract address","0x0000000000000000000000000000000000000000" , types.string)
+    .addOptionalParam("salt", "mos contract address",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 task("transferOut",
     "Cross-chain transfer out",
     require("./transferOut")
 )
-    .addParam("mos", "the MOS address")
     .addParam("target", "The target address")
     .addParam("calldata", "call data")
+    .addParam("chain", "target chain id")
     .addOptionalParam("gaslimit", "The receiver address, default is msg.sender",5000000,types.int)
     .addOptionalParam("value", "transfer value, unit WEI",0,types.int)
-    .addParam("chain", "target chain id")
-
-
-task("addWhiteList",
-    "Cross-chain add white list",
-    require("./addWhiteList")
-)
-    .addParam("whitelist","This is a whitelist address")
-    .addOptionalParam("tag","Default to true", true, types.boolean)
+    .addOptionalParam("salt", "mos contract address",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 
 task("setFeeService",
@@ -111,69 +80,20 @@ task("setFeeService",
     require("./setFeeService")
 )
     .addParam("address", "message fee address")
-
-task("setFeeServiceCreate3",
-    "Set message fee service address ",
-    require("./setFeeServiceCreate3")
-)
-    .addParam("address", "message fee address")
-    .addOptionalParam("mosAddress", "mos relay contract address","0x0000000000000000000000000000000000000000" , types.string)
-
+    .addOptionalParam("salt", "mos contract address",MOS_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 task("setMessageFee",
     "set chain message fee",
     require("./setMessageFee")
 )
-    .addParam("fee", "Expenses to be fee")
-    .addParam("target", "Target chain execution address")
-    .addParam("chain", "to chain id")
+    .addParam("chainid", "to chain id",)
+    .addParam("price", "Expenses to be fee",)
+    .addParam("baselimit", "Target chain execution address",)
+    .addOptionalParam("tokenaddress", "fee token address","0x0000000000000000000000000000000000000000" , types.address)
+    .addOptionalParam("feesalt", "mos contract address",FEE_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
-
-task("deployEcho",
-    "deploy echo",
-    require("./deployEcho")
-)
-    .addOptionalParam("mos", "mos address","0x00")
-
-task("setTarget",
-    "set target address",
-    require("./setTarget")
-)
-    .addParam("chainid", "to chain id")
-    .addParam("target", "target address")
-
-
-task("getEcho",
-    "Gets the value of the current key",
-    require("./getEcho")
-)
-    .addParam("echoAddress", "greeting contract address")
-    .addParam("key", "Query key")
-
-task("sendEcho",
-    "send echo",
-    require("./sendEcho")
-)
-    .addParam("echoAddress", "echo contract address")
-    .addParam("key", "key")
-    .addParam("value", "value")
-    .addParam("chainid", "The cross-chain chainId of the message")
-    .addOptionalParam("target", "Target chain execution address","0x00")
-
-
-task("relayList",
-    "List mos relay infos",
-    require("./relayList")
-)
-    .addOptionalParam("relay", "The mos address, default mos", "relay", types.string)
-    .addOptionalParam("token", "The token address, default wtoken", "wtoken", types.string)
-
-task("mosList",
-    "List mos relay infos",
-    require("./mosList")
-)
-    .addOptionalParam("mos", "The MOS address, default mos", "mos", types.string)
-    .addOptionalParam("token", "The token address, default wtoken", "wtoken", types.string)
 
 task("customData",
     "Construct multi-sign data",
