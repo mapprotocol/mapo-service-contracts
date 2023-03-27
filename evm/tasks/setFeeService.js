@@ -15,10 +15,12 @@ module.exports = async (taskArgs,hre) => {
 
     let mosAddress = await factory.getAddress(hash);
 
+    console.log("mos proxy address:", mosAddress)
+
     let mos = await ethers.getContractAt('MapoServiceV3',mosAddress);
 
     await (await mos.connect(deployer).setFeeService(taskArgs.address)).wait();
 
-    console.log(`mos ${mosAddress} set  message fee service address  ${taskArgs.address} successfully `);
+    console.log(`set  message fee service address  ${taskArgs.address} successfully `);
 
 }

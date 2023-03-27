@@ -80,7 +80,7 @@ task("setFeeService",
     require("./setFeeService")
 )
     .addParam("address", "message fee address")
-    .addOptionalParam("salt", "mos contract address",MOS_SALT , types.string)
+    .addOptionalParam("salt", "mos contract address", MOS_SALT , types.string)
     .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
 task("setMessageFee",

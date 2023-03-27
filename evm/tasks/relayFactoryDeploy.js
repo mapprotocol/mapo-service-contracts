@@ -30,7 +30,7 @@ module.exports = async (taskArgs,hre) => {
 
     let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.salt));
 
-    let factory = await ethers.getContractAt("IDeployFactory",taskArgs.factory)
+    let factory = await ethers.getContractAt("IDeployFactory", taskArgs.factory)
 
     console.log("deploy factory address:",factory.address)
 
@@ -38,11 +38,13 @@ module.exports = async (taskArgs,hre) => {
 
     let mosProxyAddress = await factory.connect(deployer).getAddress(hash)
 
+    console.log("deployed mos relay proxy address:", mosProxyAddress)
+
     let proxy = await ethers.getContractAt('MapoServiceV3', mosProxyAddress);
 
     let owner = await proxy.connect(deployer).getAdmin();
 
-    console.log(`MapoServiceRelayV3 Proxy contract address is ${mosProxyAddress} init admin address is ${owner} deploy contract salt is ${hash}`)
+    console.log(`MapoServiceRelayV3 Proxy contract address is ${mosProxyAddress}, init admin address is ${owner}, deploy contract salt is ${hash}`)
 
 
 }

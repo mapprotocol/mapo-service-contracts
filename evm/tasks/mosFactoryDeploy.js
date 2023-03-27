@@ -39,10 +39,12 @@ module.exports = async (taskArgs, hre) => {
 
     let mosProxyAddress = await factory.connect(deployer).getAddress(hash)
 
+    console.log("deployed mos proxy address:", mosProxyAddress)
+
     let proxy = await ethers.getContractAt('MapoServiceV3', mosProxyAddress);
 
     let owner = await proxy.connect(deployer).getAdmin();
 
-    console.log(`MapoServiceV3 Proxy contract address is ${mosProxyAddress} init admin address is ${owner} deploy contract salt is ${hash}`)
+    console.log(`MapoServiceV3 Proxy contract address is ${mosProxyAddress}, init admin address is ${owner}, deploy contract salt is ${hash}`)
 
 }
