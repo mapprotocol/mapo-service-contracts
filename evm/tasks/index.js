@@ -94,6 +94,14 @@ task("setMessageFee",
     .addOptionalParam("feesalt", "mos contract address",FEE_SALT , types.string)
     .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
 
+task("setFeeReceiver",
+    "Set message fee service address ",
+    require("./setFeeReceiver")
+)
+    .addParam("address", "message fee address")
+    .addOptionalParam("feesalt", "mos contract address",FEE_SALT , types.string)
+    .addOptionalParam("factory", "mos contract address",DEPLOY_FACTORY , types.string)
+
 
 task("customData",
     "Construct multi-sign data",

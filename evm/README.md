@@ -17,18 +17,24 @@ PRIVATE_KEY User-deployed private key
 
 INFURA_KEY User-deployed infura key
 
+MOS_SALT User-deployed mos contract salt
+
+FEE_SALT User-deployed fee swrvice contract salt
+
+DEPLOY_FACTORY Factory-contract address
+
 ## Instruction
-MAPOmnichainServiceV3 contract is suitable for evm-compatible chains and implements cross-chain logic
+MapoServiceV3 contract is suitable for evm-compatible chains and implements cross-chain logic
 
-MAPOmnichainServiceRelayV3 contract implements cross-chain logic and basic cross-chain control based on MAP Relay Chain
+MapoServiceRelayV3 contract implements cross-chain logic and basic cross-chain control based on MAP Relay Chain
 
-TokenRegisterV3 contract is used to control the mapping of cross-chain tokens
+FeeService contracts are used to control cross-chain fees
 
 ## Build
 
 ```shell
 git clone https://github.com/mapprotocol/mapo-service-contracts.git
-cd mapo-service-contracts/
+cd mapo-service-contracts/evm
 npm install
 ```
 
@@ -47,12 +53,12 @@ The following steps help to deploy MOS Relay contracts on MAPO Relay Chain.
 
 1. Deploy Message fee
 ```
-npx hardhat deploy --tags FeeService --network <network>
+npx hardhat feeFactoryDeploy --network <network>
 ````
 2. Deploy MOS Relay
 
 ```
-npx hardhat relayDeploy --wrapped <wrapped token> --lightnode <lightNodeManager address> --network <network>
+npx hardhat relayFactoryDeploy --wrapped <wrapped token> --lightnode <lightNodeManager address> --network <network>
 ````
 
 * `wrapped token` is wrapped MAP token address on MAP mainnet or MAP Makalu testnet.
@@ -67,7 +73,7 @@ npx hardhat setFeeService  --address <message fee service address> --network <ne
 
 1. Deploy
 ```
-npx hardhat mosDeploy --wrapped <native wrapped address> --lightnode <lightnode address> --network <network>
+npx hardhat mosFactoryDeploy --wrapped <native wrapped address> --lightnode <lightnode address> --network <network>
 ```
 
 2. Set MOS Relay Address
@@ -100,7 +106,7 @@ npx hardhat relayRegisterChain --address <MOS address> --chain <near chain id> -
 
 1. Set message fee
 ```
-npx hardhat setMessageFee --fee <fee number> --chain <to chain id>  --target <to chain address> --network <network>
+npx hardhat setMessageFee --chainid <to chain id> --baselimit <Cross-chain base limit>  --price <gas price> --tokenaddress <The default is native token, can be filled in token address> --network <network>
 ```
 
 
@@ -123,43 +129,6 @@ npx hardhat deploy --tags MapoServiceRelayV3Up --network <network>
 
 1.  transfer out
 ```
-npx hardhat transferOut --mos <mos or relay address> --target <to chain target address> --calldata <call data> --chain <to chain id> --network <network>
+npx hardhat transferOut  --target <to chain target address> --calldata <call data> --chain <to chain id> --network <network>
 ```
 
-
-## List token mapped chain
-
-1. relay chain
-```
-npx hardhat relayList --relay <relay address> --token <token address> --network <network>
-```
-
-2. altchains
-```
-npx hardhat mosList --mos <relay address> --token <token address> --network <network>
-```
-
-## Echo details
-
-1. deploy echo
-
-```
-npx hardhat deployEcho --mos <optional mos address> --network <network>
-```
-2. set chainId target address
-```
-npx hardhat setTarget --chainid <chain id> --target <target address> --network <network>
-```
-
-## Echo game
-
-1. query key
-
-```
-npx hardhat getEcho --echoAddress <echo address> --key <key> --network <network>
-```
-2. send echo
-
-```
-npx hardhat sendEcho --echoAddress <echo address> --key <key> --value <echo value> --network <network>
-```
