@@ -26,10 +26,12 @@ module.exports = async (taskArgs, hre) => {
 
     let feeServiceAddress = await factory.connect(deployer).getAddress(hash)
 
-    let proxy = await ethers.getContractAt('FeeService', feeServiceAddress);
+    console.log("deployed fee service address:", feeServiceAddress)
 
-    let owner = await proxy.connect(deployer).owner();
+    let feeService = await ethers.getContractAt('FeeService', feeServiceAddress);
 
-    console.log(`FeeService  contract address is ${feeServiceAddress} init admin address is ${owner} deploy contract salt is ${hash}`)
+    let owner = await feeService.connect(deployer).owner();
+
+    console.log(`FeeService  contract address is ${feeServiceAddress}, init admin address is ${owner}, deploy contract salt is ${hash}`)
 
 }

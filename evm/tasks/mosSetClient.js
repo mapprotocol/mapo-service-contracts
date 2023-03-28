@@ -15,6 +15,8 @@ module.exports = async (taskArgs,hre) => {
 
     let mosAddress = await factory.getAddress(hash);
 
+    console.log("mos proxy address:",mosAddress)
+
     let mos = await ethers.getContractAt('MapoServiceV3', mosAddress);
 
     await (await mos.connect(deployer).setLightClient(taskArgs.client)).wait();
