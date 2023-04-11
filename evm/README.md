@@ -19,7 +19,7 @@ INFURA_KEY User-deployed infura key
 
 MOS_SALT User-deployed mos contract salt
 
-FEE_SALT User-deployed fee swrvice contract salt
+FEE_SALT User-deployed fee service contract salt
 
 DEPLOY_FACTORY Factory-contract address
 

@@ -74,9 +74,8 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
 
         require(_chainId == _outEvent.fromChain, "MOS: invalid chain id");
 
+        MessageData memory msgData = abi.decode(_outEvent.messageData,(MessageData));
         if(_outEvent.toChain == selfChainId){
-
-            MessageData memory msgData = abi.decode(_outEvent.messageData,(MessageData));
 
             address target = Utils.fromBytes(msgData.target);
             if (msgData.msgType == MessageType.CALLDATA && callerList[target][_chainId][_outEvent.fromAddress]){
@@ -86,7 +85,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                     emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
 
                 }else{
-                    //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
+
                     emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
                 }
             }else if(msgData.msgType == MessageType.MESSAGE){
@@ -96,12 +95,38 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
 
                 } catch (bytes memory reason) {
 
-                    //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
-                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                   emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
                 }
             }
         }else{
-            emit mapMessageOut(_outEvent.fromChain,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,_outEvent.messageData);
+            if(msgData.relay){
+                address target = Utils.fromBytes(msgData.target);
+                if (msgData.msgType == MessageType.CALLDATA && callerList[target][_chainId][_outEvent.fromAddress]){
+                    (bool success,bytes memory reason) = target.call{gas: msgData.gasLimit}(msgData.payload);
+                    if(success){
+
+                        emit mapMessageOut(_outEvent.fromChain,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,reason);
+
+                    }else{
+
+                        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                    }
+                }else if(msgData.msgType == MessageType.MESSAGE){
+                    try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain, _outEvent.toChain, _outEvent.fromAddress,_outEvent.orderId, msgData.payload) returns (bytes memory newMessageData) {
+
+                        emit mapMessageOut(_outEvent.fromChain,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,newMessageData);
+
+                    } catch (bytes memory reason) {
+
+                        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                    }
+                }
+
+            }else{
+                emit mapMessageOut(_outEvent.fromChain,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,_outEvent.messageData);
+            }
+
+
         }
     }
 
