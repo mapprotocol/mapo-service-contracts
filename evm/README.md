@@ -100,6 +100,14 @@ npx hardhat relayRegisterChain --address <MOS address> --chain <near chain id> -
 ```
 
 ## Configure
+### Fee mechanism
+In the FeeService mechanism, there will be base baseGas and a different chainGasPrice for each chain, which is the basis for determining how much Fee to charge for each cross chain.
+Usually (baseGas * chainGasPrice) is the base cost of one cross chain consumption.
+### Calculation fee
+```
+(baseGas + gasLimit) * chainGasPrice
+```
+gasLimit is determined by the user who calls the transferOut method and is at least 21000 and at most 10000000
 
 ### Message fee
 
