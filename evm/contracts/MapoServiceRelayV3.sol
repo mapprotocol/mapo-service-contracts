@@ -2,8 +2,8 @@
 
 pragma solidity 0.8.7;
 
-import "./MapoServiceV3.sol";
 import "@mapprotocol/protocol/contracts/interface/ILightClientManager.sol";
+import "./MapoServiceV3.sol";
 import "./utils/NearDecoder.sol";
 
 contract MapoServiceRelayV3 is MapoServiceV3 {
