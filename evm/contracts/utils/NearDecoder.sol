@@ -3,9 +3,9 @@
 
 pragma solidity 0.8.7;
 
+import "@mapprotocol/protocol/contracts/lib/RLPReader.sol";
+import "@mapprotocol/protocol/contracts/utils/Utils.sol";
 import "../interface/IEvent.sol";
-import "./RLPReader.sol";
-import "./Utils.sol";
 
 library NearDecoder {
 

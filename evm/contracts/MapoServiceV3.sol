@@ -9,12 +9,13 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@mapprotocol/protocol/contracts/interface/ILightNode.sol";
+import "@mapprotocol/protocol/contracts/utils/Utils.sol";
+import "@mapprotocol/protocol/contracts/lib/LogDecoder.sol";
 import "./interface/IFeeService.sol";
 import "./interface/IMOSV3.sol";
-import "./interface/ILightNode.sol";
 import "./interface/IMapoExecutor.sol";
-import "./utils/TransferHelper.sol";
-import "./utils/Utils.sol";
 import "./utils/EvmDecoder.sol";
 
 
@@ -35,7 +36,6 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     mapping(bytes32 => bool) public orderList;
     mapping(uint256 => ChainType) public chainTypes;
     mapping(address => mapping(uint256 => mapping(bytes => bool))) public callerList;
-
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
     event SetLightClient(address _lightNode);
@@ -106,13 +106,11 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     }
 
     function emergencyWithdraw(address _token, address payable _receiver, uint256 _amount) external onlyOwner checkAddress(_receiver) {
-        if (_token == wToken) {
-            TransferHelper.safeWithdraw(wToken, _amount);
-            TransferHelper.safeTransferETH(_receiver, _amount);
-        } else if(_token == address(0)){
-            TransferHelper.safeTransferETH(_receiver, _amount);
+         require(_amount > 0,"withdraw amount error");
+        if(_token == address(0)){
+             _receiver.transfer(_amount);
         }else {
-            TransferHelper.safeTransfer(_token,_receiver,_amount);
+            SafeERC20.safeTransfer(IERC20(_token),_receiver,_amount);
         }
     }
 
@@ -138,10 +136,10 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
             require(msg.value >= amount , "Need message fee");
 
             if (msg.value > 0) {
-                TransferHelper.safeTransferETH(receiverFeeAddress, msg.value);
+                payable(receiverFeeAddress).transfer(msg.value);
             }
         }else {
-            TransferHelper.safeTransferFrom(_feeToken, msg.sender, receiverFeeAddress, amount);
+            SafeERC20.safeTransferFrom(IERC20(_feeToken), msg.sender, receiverFeeAddress, amount);
         }
 
         bytes32 orderId = _getOrderID(msg.sender, msgData.target, _toChain);
@@ -161,9 +159,9 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         (bool sucess, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
         require(sucess, message);
 
-        IEvent.txLog[] memory logs = EvmDecoder.decodeTxLogs(logArray);
+        LogDecoder .txLog[] memory logs = LogDecoder.decodeTxLogs(logArray);
         for (uint i = 0; i < logs.length; i++) {
-            IEvent.txLog memory log = logs[i];
+            LogDecoder .txLog memory log = logs[i];
             bytes32 topic = abi.decode(log.topics[0], (bytes32));
 
             if (topic == EvmDecoder.MAP_MESSAGE_TOPIC && relayContract == log.addr) {

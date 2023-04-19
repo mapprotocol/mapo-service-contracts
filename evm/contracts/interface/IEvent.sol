@@ -15,12 +15,6 @@ interface IEvent {
         bytes toChainToken;
     }
 
-    struct txLog {
-        address addr;
-        bytes[] topics;
-        bytes data;
-    }
-
     struct dataOutEvent {
         bytes32 orderId;
         uint256 fromChain;

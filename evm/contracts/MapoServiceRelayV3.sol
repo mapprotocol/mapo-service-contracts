@@ -3,7 +3,7 @@
 pragma solidity 0.8.7;
 
 import "./MapoServiceV3.sol";
-import "./interface/ILightClientManager.sol";
+import "@mapprotocol/protocol/contracts/interface/ILightClientManager.sol";
 import "./utils/NearDecoder.sol";
 
 contract MapoServiceRelayV3 is MapoServiceV3 {
@@ -50,9 +50,9 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 // TODO
             }
         } else if (chainTypes[_chainId] == ChainType.EVM) {
-            IEvent.txLog[] memory logs = EvmDecoder.decodeTxLogs(logArray);
+            LogDecoder .txLog[] memory logs = LogDecoder.decodeTxLogs(logArray);
             for (uint256 i = 0; i < logs.length; i++) {
-                IEvent.txLog memory log = logs[i];
+                LogDecoder .txLog memory log = logs[i];
                 bytes32 topic = abi.decode(log.topics[0], (bytes32));
 
                 if (topic == EvmDecoder.MAP_MESSAGE_TOPIC) {
