@@ -2,14 +2,13 @@
 
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@mapprotocol/protocol/contracts/interface/ILightNode.sol";
 import "@mapprotocol/protocol/contracts/utils/Utils.sol";
 import "@mapprotocol/protocol/contracts/lib/LogDecoder.sol";
@@ -19,9 +18,9 @@ import "./interface/IMapoExecutor.sol";
 import "./utils/EvmDecoder.sol";
 
 
-contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPSUpgradeable {
-    using SafeMath for uint;
-    using Address for address;
+contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV3, UUPSUpgradeable {
+    using SafeMathUpgradeable for uint;
+    using AddressUpgradeable for address;
 
     uint public immutable selfChainId = block.chainid;
     uint256 public constant gasLimitMin = 21000;
@@ -52,6 +51,8 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         wToken = _wToken;
         lightNode = ILightNode(_lightNode);
         _changeAdmin(tx.origin);
+        __ReentrancyGuard_init();
+        __Pausable_init();
     }
 
     receive() external payable {}
@@ -102,6 +103,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
     }
 
     function getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) external override view returns(uint256 amount, address receiverAddress) {
+        require(amount > 0 && receiverAddress != address(0),"Cross-chain chainid is not supported for now.");
         (amount, receiverAddress) = _getMessageFee(_toChain, _feeToken, _gasLimit);
     }
 
@@ -110,7 +112,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
         if(_token == address(0)){
              _receiver.transfer(_amount);
         }else {
-            SafeERC20.safeTransfer(IERC20(_token),_receiver,_amount);
+            SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(_token),_receiver,_amount);
         }
     }
 
@@ -139,7 +141,7 @@ contract MapoServiceV3 is ReentrancyGuard, Initializable, Pausable, IMOSV3, UUPS
                 payable(receiverFeeAddress).transfer(msg.value);
             }
         }else {
-            SafeERC20.safeTransferFrom(IERC20(_feeToken), msg.sender, receiverFeeAddress, amount);
+            SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(_feeToken), msg.sender, receiverFeeAddress, amount);
         }
 
         bytes32 orderId = _getOrderID(msg.sender, msgData.target, _toChain);

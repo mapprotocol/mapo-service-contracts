@@ -23,6 +23,7 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@openzeppelin/contracts-upgradeable": "^4.8.3",
     "ajv": "^8.8.2",
     "bignumber.js": "^9.0.1",
     "keythereum": "^1.2.0",
@@ -33,9 +34,10 @@
     "stdio": "^2.1.1"
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.7",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
     "@nomiclabs/hardhat-solhint": "^2.0.0",
     "@openzeppelin/contracts": "^4.8.1",
+    "@openzeppelin/hardhat-upgrades": "^1.22.1",
     "@types/chai": "^4.2.15",
     "@types/mocha": "^8.2.1",
     "@types/node": "^14.14.31",
@@ -46,7 +48,7 @@
     "ding-robot": "^1.0.0",
     "dotenv": "^8.2.0",
     "ethereum-waffle": "^3.3.0",
-    "ethers": "^5.5.2",
+    "ethers": "^5.7.2",
     "hardhat": "^2.12.0",
     "hardhat-abi-exporter": "^2.2.1",
     "hardhat-deploy": "^0.7.11",

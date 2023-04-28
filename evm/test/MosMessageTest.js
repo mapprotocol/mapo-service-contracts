@@ -45,7 +45,8 @@ describe("MAPO ServiceV3 start test", () =>{
         mos = mosContract.attach(proxy.address);
 
         let feeContract = await ethers.getContractFactory("FeeService");
-        feeService = await  feeContract.deploy(owner.address);
+        feeService = await  feeContract.deploy();
+
         console.log("FeeService address:",feeService.address)
 
         return {mos,echo,feeService,owner,addr1};
@@ -68,6 +69,10 @@ describe("MAPO ServiceV3 start test", () =>{
 
             //await echo.addCorrespondence("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",true);
             await echo.addCorrespondence("5","0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9",true);
+
+            expect(await feeService.owner()).to.equal("0x0000000000000000000000000000000000000000");
+
+            await feeService.initialize();
 
             await feeService.setBaseGas(97,1000000);
             await feeService.setChainGasPrice(97,"0x0000000000000000000000000000000000000000",10000);
@@ -105,7 +110,3 @@ describe("MAPO ServiceV3 start test", () =>{
 
 
 })
-
-
-
-
