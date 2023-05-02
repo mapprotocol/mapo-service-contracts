@@ -8,12 +8,8 @@ module.exports = async (taskArgs, hre) => {
 
     let FeeService = await ethers.getContractFactory('FeeService');
 
-    let initData = await ethers.utils.defaultAbiCoder.encode(
-        ["address"],
-        [deployer.address]
-    )
 
-    let deployData = FeeService.bytecode + initData.substring(2);
+    let deployData = FeeService.bytecode;
 
     console.log("mos salt:", taskArgs.feesalt);
     let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.feesalt));
@@ -29,6 +25,8 @@ module.exports = async (taskArgs, hre) => {
     console.log("deployed fee service address:", feeServiceAddress)
 
     let feeService = await ethers.getContractAt('FeeService', feeServiceAddress);
+
+     await (await feeService.connect(deployer).initialize()).wait();
 
     let owner = await feeService.connect(deployer).owner();
 

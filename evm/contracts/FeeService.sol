@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.7;
 
+import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "./interface/IFeeService.sol";
 
-contract FeeService is IFeeService {
+contract FeeService is Ownable2StepUpgradeable, IFeeService {
     address public feeReceiver;
-    address public owner;
     mapping(uint256 => uint256) public baseGas; // chainid => gas
     mapping(uint256 => mapping(address => uint256)) public chainGasPrice; // chain => (feeToken => gasPrice)
 
@@ -14,13 +14,10 @@ contract FeeService is IFeeService {
     event SetChainGasPrice(uint256 chainId,uint256 chainPrice);
     event SetFeeReceiver(address receiver);
 
-    constructor(address _owner){
-        owner = _owner;
-    }
+    constructor(){}
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "fee service only admin");
-        _;
+    function initialize() public initializer {
+        __Ownable2Step_init();
     }
 
     function getMessageFee(uint256 _chainId,address _feeToken) external override view returns(uint256 _base,uint256 _gasPrice,address _receiverAddress){
