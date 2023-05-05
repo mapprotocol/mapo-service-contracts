@@ -11,6 +11,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
     ILightClientManager public lightClientManager;
 
     mapping(uint256 => bytes) public mosContracts;
+    mapping(uint256 => ChainType) public chainTypes;
 
     event SetLightClientManager(address lightClient);
     event RegisterChain(uint256 _chainId, bytes _address, ChainType _type);

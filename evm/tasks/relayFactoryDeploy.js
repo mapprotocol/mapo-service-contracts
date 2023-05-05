@@ -28,6 +28,8 @@ module.exports = async (taskArgs,hre) => {
 
     let deployData = mosProxy.bytecode + initData.substring(2);
 
+    console.log("mos salt:", taskArgs.salt);
+
     let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.salt));
 
     let factory = await ethers.getContractAt("IDeployFactory", taskArgs.factory)
@@ -44,7 +46,7 @@ module.exports = async (taskArgs,hre) => {
 
     let owner = await proxy.connect(deployer).getAdmin();
 
-    console.log(`MapoServiceRelayV3 Proxy contract address is ${mosProxyAddress}, init admin address is ${owner}, deploy contract salt is ${hash}`)
+    console.log(`MapoServiceRelayV3 Proxy contract address is ${mosProxyAddress}, init admin address is ${owner}`)
 
 
 }

@@ -45,6 +45,6 @@ module.exports = async (taskArgs, hre) => {
 
     let owner = await proxy.connect(deployer).getAdmin();
 
-    console.log(`MapoServiceV3 Proxy contract address is ${mosProxyAddress}, init admin address is ${owner}, deploy contract salt is ${hash}`)
+    console.log(`MapoServiceV3 Proxy contract address is ${mosProxyAddress}, init admin address is ${owner}`)
 
 }

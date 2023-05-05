@@ -33,7 +33,7 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
     IFeeService public feeService;
 
     mapping(bytes32 => bool) public orderList;
-    mapping(uint256 => ChainType) public chainTypes;
+
     mapping(address => mapping(uint256 => mapping(bytes => bool))) public callerList;
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
@@ -95,7 +95,7 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
     function setRelayContract(uint256 _chainId, address _relay) external onlyOwner checkAddress(_relay) {
         relayContract = _relay;
         relayChainId = _chainId;
-        emit SetRelayContract(_chainId,_relay);
+        emit SetRelayContract(_chainId, _relay);
     }
 
     function addRemoteCaller(uint256 _fromChain, bytes memory _fromAddress, bool _tag) external override {
@@ -103,7 +103,7 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
     }
 
     function getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) external override view returns(uint256 amount, address receiverAddress) {
-        require(amount > 0 && receiverAddress != address(0),"Cross-chain chainid is not supported for now.");
+
         (amount, receiverAddress) = _getMessageFee(_toChain, _feeToken, _gasLimit);
     }
 
@@ -161,9 +161,9 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         (bool sucess, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
         require(sucess, message);
 
-        LogDecoder .txLog[] memory logs = LogDecoder.decodeTxLogs(logArray);
+        LogDecoder.txLog[] memory logs = LogDecoder.decodeTxLogs(logArray);
         for (uint i = 0; i < logs.length; i++) {
-            LogDecoder .txLog memory log = logs[i];
+            LogDecoder.txLog memory log = logs[i];
             bytes32 topic = abi.decode(log.topics[0], (bytes32));
 
             if (topic == EvmDecoder.MAP_MESSAGE_TOPIC && relayContract == log.addr) {
@@ -174,6 +174,7 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
                 }
             }
         }
+
         emit mapTransferExecute(_chainId, selfChainId, msg.sender);
     }
 
@@ -187,9 +188,8 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
             if(success){
 
                 emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
-
             }else{
-                //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
+
                 emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
             }
         }else if(msgData.msgType == MessageType.MESSAGE){
@@ -213,7 +213,9 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
     }
 
     function _getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) internal view returns(uint256 amount, address receiverAddress) {
-        (uint256 baseGas,uint256 chainPrice,address receiverFeeAddress) = feeService.getMessageFee(_toChain,_feeToken);
+        (uint256 baseGas, uint256 chainPrice, address receiverFeeAddress) = feeService.getMessageFee(_toChain, _feeToken);
+
+        require(baseGas > 0, "to chain not supported now.");
 
         amount = (baseGas.add(_gasLimit)).mul(chainPrice);
         receiverAddress = receiverFeeAddress;

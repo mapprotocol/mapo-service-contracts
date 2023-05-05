@@ -1,7 +1,7 @@
 # mapo-service-contracts
 
 ## Setup Instructions
-Edit the .env-example.txt file and save it as .env
+Edit the .env.example file and save it as .env
 
 The following node and npm versions are required
 ````
@@ -114,7 +114,7 @@ gasLimit is determined by the user who calls the transferOut method and is at le
 
 1. Set message fee
 ```
-npx hardhat setMessageFee --chainid <to chain id> --baselimit <Cross-chain base limit>  --price <gas price> --tokenaddress <The default is native token, can be filled in token address> --network <network>
+npx hardhat setMessageFee --chainid <to chain id> --base <Cross-chain base limit>  --price <gas price> --tokenaddress <The default is native token, can be filled in token address> --network <network>
 ```
 
 

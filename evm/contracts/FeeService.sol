@@ -20,7 +20,7 @@ contract FeeService is Ownable2StepUpgradeable, IFeeService {
         __Ownable2Step_init();
     }
 
-    function getMessageFee(uint256 _chainId,address _feeToken) external override view returns(uint256 _base,uint256 _gasPrice,address _receiverAddress){
+    function getMessageFee(uint256 _chainId, address _feeToken) external override view returns(uint256 _base,uint256 _gasPrice,address _receiverAddress){
 
         return (baseGas[_chainId], chainGasPrice[_chainId][_feeToken], feeReceiver);
     }

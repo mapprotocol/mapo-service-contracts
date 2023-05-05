@@ -13,12 +13,14 @@ module.exports = async (taskArgs,hre) => {
 
     let hash = await ethers.utils.keccak256(await ethers.utils.toUtf8Bytes(taskArgs.feesalt));
 
-    let feeAddress = await factory.getAddress(hash);
+    let feeServiceAddress = await factory.getAddress(hash);
 
-    let fee = await ethers.getContractAt('FeeService',feeAddress);
+    console.log("fee service address:", feeServiceAddress)
+
+    let fee = await ethers.getContractAt('FeeService', feeServiceAddress);
 
     await (await fee.connect(deployer).setFeeReceiver(taskArgs.address)).wait();
 
-    console.log(`FeeService ${feeAddress} set  receiver address is ${taskArgs.address} successfully `);
+    console.log(`FeeService set  receiver address is ${taskArgs.address} successfully `);
 
 }
