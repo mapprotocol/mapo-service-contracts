@@ -22,7 +22,7 @@ interface IMapoService {
 
     function getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) external view returns(uint256, address);
 
-    function transferOut(uint256 _toChain, bytes memory _messageData,address _feeToken) external payable  returns(bool);
+    function transferOut(uint256 _toChain, bytes memory _messageData,address _feeToken) external payable  returns(bytes32);
 
 
     function addRemoteCaller(uint256 _fromChain, bytes memory _fromAddress,bool _tag) external;
@@ -94,14 +94,8 @@ contract Echo is Ownable, IMapoExecutor {
 
         bytes memory mData = abi.encode(false,IMapoService.MessageType.CALLDATA,_target,data,500000,0);
 
-        require(
-            IMapoService(MapoService).transferOut{value:msg.value}(
-                _tochainId,
-                mData,
-                address(0)
-            ),
-            "Greeting fail"
-        );
+        IMapoService(MapoService).transferOut{value:msg.value}(_tochainId, mData, address(0));
+
     }
 
     function addCorrespondence(uint256 _fromChain,bytes memory _targetAddress,bool _tag) external  onlyOwner{
