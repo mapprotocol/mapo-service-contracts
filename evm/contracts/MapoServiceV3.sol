@@ -120,7 +120,7 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
     payable
     nonReentrant
     whenNotPaused
-    returns(bool)
+    returns(bytes32)
     {
         require(_toChain != selfChainId, "Only other chain");
 
@@ -152,7 +152,7 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
 
         emit mapMessageOut(selfChainId, _toChain, orderId, fromAddress, _messageData);
 
-        return true;
+        return orderId;
     }
 
 

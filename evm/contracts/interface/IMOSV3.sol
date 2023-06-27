@@ -42,7 +42,7 @@ interface IMOSV3 {
     // @param toChain - Target chain chainID.
     // @param messageData - Structure MessageData encoding.
     // @param feeToken - In what Token would you like to pay the fee.
-    function transferOut(uint256 toChain, bytes memory messageData,address feeToken) external payable  returns(bool);
+    function transferOut(uint256 toChain, bytes memory messageData,address feeToken) external payable  returns(bytes32);
 
 
     // @notice Add the fromaddress permission.
