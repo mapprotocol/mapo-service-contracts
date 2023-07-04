@@ -107,6 +107,11 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         (amount, receiverAddress) = _getMessageFee(_toChain, _feeToken, _gasLimit);
     }
 
+    function getExecutePermission(address _mosAddress,uint256 _fromChainId,bytes memory _fromAddress) external override view returns(bool){
+
+        return callerList[_mosAddress][_fromChainId][_fromAddress];
+    }
+
     function emergencyWithdraw(address _token, address payable _receiver, uint256 _amount) external onlyOwner checkAddress(_receiver) {
          require(_amount > 0,"withdraw amount error");
         if(_token == address(0)){

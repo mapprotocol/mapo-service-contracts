@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -31,22 +33,22 @@ contract Echo is Ownable, IMapoExecutor {
         return newData;
     }
 
-    function getData(string memory _key, string memory _val) public view returns(bytes memory data) {
+    function getData(string memory _key, string memory _val) public pure returns(bytes memory data) {
 
         data = abi.encodeWithSelector(Echo.setList.selector, _key, _val);
     }
 
-    function getRelayData(string memory _key,string memory _val) public view returns(bytes memory data) {
+    function getRelayData(string memory _key,string memory _val) public pure returns(bytes memory data) {
 
         data = abi.encodeWithSelector(Echo.setRelayList.selector,_key,_val);
     }
 
-    function getMessageData(string memory _key,string memory _val) public view returns(bytes memory data) {
+    function getMessageData(string memory _key,string memory _val) public pure returns(bytes memory data) {
 
         data = abi.encode(_key,_val);
     }
 
-    function getMessageBytes(IMOSV3.MessageData memory mData) public view returns(bytes memory data) {
+    function getMessageBytes(IMOSV3.MessageData memory mData) public pure returns(bytes memory data) {
 
         data = abi.encode(mData);
     }
@@ -79,7 +81,8 @@ contract Echo is Ownable, IMapoExecutor {
     }
 
 
-    function mapoExecute(uint256 _fromChain, uint256 _toChain, bytes calldata _fromAddress, bytes32 _orderId, bytes calldata _message) external  override returns(bytes memory newData) {
+    function mapoExecute(uint256 _fromChain, uint256 , bytes calldata _fromAddress, bytes32 , bytes calldata _message) external  override returns(bytes memory newData) {
+        require(IMOSV3(MapoService).getExecutePermission(address(this),_fromChain,_fromAddress),"no permission");
 
         (string memory key, string memory value)  = abi.decode(_message, (string,string));
 
