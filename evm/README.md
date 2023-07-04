@@ -1,13 +1,6 @@
-# MAPO Service Contracts
+# MOS Message Contracts
 
-MAP Protocol is the omnichain layer of Web3, a cross-chain interoperable protocol to empower Web3 apps to thrive in the omnichain future.
-
-MAPO Service (MOS) provides common modules needed by cross-chain DApps to further lower the threshold of building cross-chain DApps with MAP protocol. 
-
-![Illustration of MAP Protocol's MAPO Services (MOS) Layer](https://raw.githubusercontent.com/mapprotocol/docs/master/learn/Teachnical_Mechanism/mcs_final.png)
-
-## MOS Message
-MOS message is MAP Protocol omnichain messaging service, tt enables DApp built on one chain to easily interoperate other chains.
+MOS message is a MOS(MAPO Service), MAP Protocol omnichain messaging service, it enables DApp built on one chain to easily interoperate other chains.
 
 ![MOS Message](https://raw.githubusercontent.com/mapprotocol/docs/master/develop/mos/message/croosChainMessage.png)
 
@@ -17,6 +10,16 @@ With MOS message you can achieve interoperation with two chains:
 
 For examples built on MOS message, visit [omnichain examples](https://github.com/mapprotocol/omnichain-examples).
 
+## MAPO Service
+
+MAP Protocol is the omnichain layer of Web3, a cross-chain interoperable protocol to empower Web3 apps to thrive in the omnichain future.
+
+MAPO Service (MOS) provides common modules needed by cross-chain DApps to further lower the threshold of building cross-chain DApps with MAP protocol. 
+
+![Illustration of MAP Protocol's MAPO Services (MOS) Layer](https://raw.githubusercontent.com/mapprotocol/docs/master/learn/Teachnical_Mechanism/mcs_final.png)
+
+Visit [docs](https://docs.mapprotocol.io/learn/overiew/mcs) for more MOS information.
+
 ## Installation
 
 ```shell
@@ -24,7 +27,6 @@ npm install --save-dev @mapprotocol/mos
 # or
 yarn add --dev @mapprotocol/mos
 ```
-
 
 ## Instruction
 MapoServiceV3 contract is suitable for evm-compatible chains and implements cross-chain logic
@@ -60,6 +62,7 @@ npx hardhat test
 The following steps help to deploy MOS Relay contracts on MAPO Relay Chain.
 
 1. Deploy Message fee
+
 ```
 npx hardhat feeFactoryDeploy --network <network>
 ````
@@ -70,10 +73,11 @@ npx hardhat feeFactoryDeploy --network <network>
 npx hardhat relayFactoryDeploy --wrapped <wrapped token> --lightnode <lightNodeManager address> --network <network>
 ````
 
-* `wrapped token` is wrapped MAP token address on MAP mainnet or MAP Makalu testnet.
-* `lightNodeManager address` is the light client mananger address deployed on MAP mainnet or MAP Makalu. See [here](https://github.com/mapprotocol/map-contracts/protocol/README.md) for more information.
+* `wrapped token` is wrapped MAP token address on MAPO Mainnet or Makalu testnet.
+* `lightNodeManager address` is the light client manager address deployed on MAP mainnet or MAP Makalu. See [here](https://github.com/mapprotocol/map-contracts/protocol/README.md) for more information.
 
 3. Init MOS Relay
+
 ```
 npx hardhat setFeeService  --address <message fee service address> --network <network>
 ````

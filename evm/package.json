@@ -1,6 +1,6 @@
 {
   "name": "@mapprotocol/mos",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MAP Protocol omnichain messaging service.",
   "files": [
     "artifacts/contracts/**/*.sol/*.json",
@@ -9,9 +9,9 @@
   ],
   "main": "index.js",
   "scripts": {
-    "map:deploy:FeeCenter": "npx hardhat deploy --tags FeeCenter --network Map",
-    "map:deploy:MapoServiceProxyUp": "npx hardhat deploy --tags MAPCrossChainServiceRelayProxyUp --network Bsc",
-    "map:deploy:MapoServiceRelayProxyUp": "npx hardhat deploy --tags MapCrossChainServiceRelayProxyUp --network Map"
+    "deploy:FeeCenter": "npx hardhat deploy --tags FeeCenter --network Map",
+    "deploy:MapoServiceProxyUp": "npx hardhat deploy --tags MAPCrossChainServiceRelayProxyUp --network Bsc",
+    "deploy:MapoServiceRelayProxyUp": "npx hardhat deploy --tags MapCrossChainServiceRelayProxyUp --network Map"
   },
   "repository": {
     "type": "git",
@@ -66,5 +66,12 @@
     "ts-node": "^9.1.1",
     "typescript": "^4.2.2",
     "web3": "^1.3.4"
-  }
+  },
+  "keywords": [
+    "mapprotocol",
+    "mapo",
+    "omnichain",
+    "cross-chain",
+    "solidity"
+  ]
 }
