@@ -37,9 +37,11 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
     mapping(address => mapping(uint256 => mapping(bytes => bool))) public callerList;
 
     event mapTransferExecute(uint256 indexed fromChain, uint256 indexed toChain, address indexed from);
-    event SetLightClient(address _lightNode);
-    event SetFeeService(address feeServiceAddress);
-    event SetRelayContract(uint256 _chainId, address _relay);
+    event SetLightClient(address indexed lightNode);
+    event SetFeeService(address indexed feeServiceAddress);
+    event SetRelayContract(uint256 indexed chainId, address indexed relay);
+
+    event AddRemoteCaller(address indexed target, uint256 remoteChainId, bytes remoteAddress, bool tag);
 
     function initialize(address _wToken, address _lightNode)
     public
@@ -98,27 +100,30 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         emit SetRelayContract(_chainId, _relay);
     }
 
-    function addRemoteCaller(uint256 _fromChain, bytes memory _fromAddress, bool _tag) external override {
-        callerList[msg.sender][_fromChain][_fromAddress] = _tag;
-    }
-
-    function getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) external override view returns(uint256 amount, address receiverAddress) {
-
-        (amount, receiverAddress) = _getMessageFee(_toChain, _feeToken, _gasLimit);
-    }
-
-    function getExecutePermission(address _mosAddress,uint256 _fromChainId,bytes memory _fromAddress) external override view returns(bool){
-
-        return callerList[_mosAddress][_fromChainId][_fromAddress];
-    }
 
     function emergencyWithdraw(address _token, address payable _receiver, uint256 _amount) external onlyOwner checkAddress(_receiver) {
-         require(_amount > 0,"withdraw amount error");
+        require(_amount > 0,"withdraw amount error");
         if(_token == address(0)){
-             _receiver.transfer(_amount);
+            _receiver.transfer(_amount);
         }else {
             SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(_token),_receiver,_amount);
         }
+    }
+
+
+    function getMessageFee(uint256 _toChain, address _feeToken, uint256 _gasLimit) external override view returns(uint256 amount, address receiverAddress) {
+        (amount, receiverAddress) = _getMessageFee(_toChain, _feeToken, _gasLimit);
+    }
+
+    function getExecutePermission(address _targetAddress, uint256 _fromChain, bytes memory _fromAddress) external override view returns(bool) {
+        return callerList[_targetAddress][_fromChain][_fromAddress];
+    }
+
+
+    function addRemoteCaller(uint256 _fromChain, bytes memory _fromAddress, bool _tag) external override {
+        callerList[msg.sender][_fromChain][_fromAddress] = _tag;
+
+        emit AddRemoteCaller(msg.sender, _fromChain, _fromAddress, _tag);
     }
 
     function transferOut(uint256 _toChain, bytes memory _messageData, address _feeToken) external  override

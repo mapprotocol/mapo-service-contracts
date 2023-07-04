@@ -1,11 +1,12 @@
 {
   "name": "@mapprotocol/mos",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "MAP Protocol omnichain messaging service.",
   "files": [
     "artifacts/contracts/**/*.sol/*.json",
     "!artifacts/contracts/**/*.sol/*.dbg.json",
-    "contracts"
+    "contracts",
+    "!contracts/mocks"
   ],
   "main": "index.js",
   "scripts": {
