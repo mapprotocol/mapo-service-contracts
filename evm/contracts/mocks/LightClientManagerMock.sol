@@ -25,7 +25,7 @@ contract LightClientManager is ILightClientManager,Ownable {
         lightNode.updateBlockHeader(_blockHeader);
     }
 
-    function verifyProofData(uint _chainId, bytes memory _receiptProof) external view override
+    function verifyProofData(uint _chainId, bytes memory _receiptProof) external pure override
     returns (bool success, string memory message, bytes memory logs) {
 //        require(lightClientContract[_chainId] != address(0), "not register");
 //        ILightNode lightNode = ILightNode(lightClientContract[_chainId]);
@@ -37,7 +37,7 @@ contract LightClientManager is ILightClientManager,Ownable {
         }
 
     }
-    function clientState(uint256 _chainId) external override view returns(bytes memory){
+    function clientState(uint256 ) external override pure returns(bytes memory){
         bytes memory b;
         return b;
     }
@@ -54,7 +54,7 @@ contract LightClientManager is ILightClientManager,Ownable {
 
     }
 
-    function verifiableHeaderRange(uint256 _chainId) external view override returns (uint256, uint256) {
+    function verifiableHeaderRange(uint256 ) external pure override returns (uint256, uint256) {
         return (0, 0);
     }
 }

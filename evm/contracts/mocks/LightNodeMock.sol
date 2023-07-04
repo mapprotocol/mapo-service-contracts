@@ -8,6 +8,7 @@ contract LightNode {
 
     function verifyProofData(bytes memory _receiptProof)
     external
+    pure
     returns (bool success, string memory message, bytes memory logs){
 
         return(true,"success",_receiptProof);

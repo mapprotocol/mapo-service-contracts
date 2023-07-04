@@ -51,6 +51,12 @@ interface IMOSV3 {
     // @param tag - Permission,false: revoke permission.
     function addRemoteCaller(uint256 fromChain, bytes memory fromAddress, bool tag) external;
 
+    // @notice Query whether the contract has execution permission.
+    // @param mosAddress - This is the mos query address.
+    // @param fromChainId - The call chain id of the source chain.
+    // @param fromAddress - The call address of the source chain.
+    function getExecutePermission(address mosAddress,uint256 fromChainId,bytes memory fromAddress) external view returns(bool);
+
     event mapMessageOut(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData);
 
     event mapMessageIn(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData, bool result, bytes reason);
