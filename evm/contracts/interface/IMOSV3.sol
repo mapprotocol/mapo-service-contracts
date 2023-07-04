@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.7;
+pragma solidity ^0.8.0;
 
 interface IMOSV3 {
 
@@ -42,16 +42,16 @@ interface IMOSV3 {
     // @param toChain - Target chain chainID.
     // @param messageData - Structure MessageData encoding.
     // @param feeToken - In what Token would you like to pay the fee.
-    function transferOut(uint256 toChain, bytes memory messageData,address feeToken) external payable  returns(bytes32);
+    function transferOut(uint256 toChain, bytes memory messageData, address feeToken) external payable  returns(bytes32);
 
 
     // @notice Add the fromaddress permission.
     // @param fromChain - The chainID of the source chain.
     // @param fromAddress - The call address of the source chain.
     // @param tag - Permission,false: revoke permission.
-    function addRemoteCaller(uint256 fromChain, bytes memory fromAddress,bool tag) external;
+    function addRemoteCaller(uint256 fromChain, bytes memory fromAddress, bool tag) external;
 
-    event mapMessageOut(uint256 indexed fromChain, uint256 indexed toChain,bytes32 orderId, bytes fromAddrss, bytes callData);
+    event mapMessageOut(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData);
 
     event mapMessageIn(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData, bool result, bytes reason);
 
