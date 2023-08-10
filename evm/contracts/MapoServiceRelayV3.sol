@@ -90,13 +90,17 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                     emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
                 }
             }else if(msgData.msgType == MessageType.MESSAGE){
-                try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain, _outEvent.toChain, _outEvent.fromAddress,_outEvent.orderId, msgData.payload) {
+                if(AddressUpgradeable.isContract(target)){
+                    try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain, _outEvent.toChain, _outEvent.fromAddress,_outEvent.orderId, msgData.payload) {
 
-                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
+                        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
 
-                } catch (bytes memory reason) {
+                    } catch (bytes memory reason) {
 
-                   emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                       emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                    }
+                }else{
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, bytes("NoContractAddress"));
                 }
             }
         }else{
@@ -113,13 +117,17 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                         emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
                     }
                 }else if(msgData.msgType == MessageType.MESSAGE){
-                    try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain, _outEvent.toChain, _outEvent.fromAddress,_outEvent.orderId, msgData.payload) returns (bytes memory newMessageData) {
+                    if(AddressUpgradeable.isContract(target)){
+                        try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain, _outEvent.toChain, _outEvent.fromAddress,_outEvent.orderId, msgData.payload) returns (bytes memory newMessageData) {
 
-                        emit mapMessageOut(_outEvent.fromChain,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,newMessageData);
+                            emit mapMessageOut(_outEvent.fromChain,_outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress,newMessageData);
 
-                    } catch (bytes memory reason) {
+                        } catch (bytes memory reason) {
 
-                        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                            emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                        }
+                    }else{
+                        emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, bytes("NoContractAddress"));
                     }
                 }
 

@@ -198,16 +198,21 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
                 emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
             }
         }else if(msgData.msgType == MessageType.MESSAGE){
+            if(AddressUpgradeable.isContract(target)){
+                try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain, _outEvent.toChain, _outEvent.fromAddress,_outEvent.orderId, msgData.payload) {
 
-            try IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(_outEvent.fromChain, _outEvent.toChain, _outEvent.fromAddress,_outEvent.orderId, msgData.payload) {
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
 
-                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, true, bytes(""));
+                } catch (bytes memory reason) {
 
-            } catch (bytes memory reason) {
+                    //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
+                    emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                }
+            }else{
 
-                //storedCalldataList[_outEvent.fromChain][_outEvent.fromAddress] = StoredCalldata(msgData.payload, msgData.target, _outEvent.orderId);
-                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false, reason);
+                emit mapMessageIn(_outEvent.fromChain, _outEvent.toChain,_outEvent.orderId,_outEvent.fromAddress, msgData.payload, false,bytes("NoContractAddress"));
             }
+
         }
 
 
