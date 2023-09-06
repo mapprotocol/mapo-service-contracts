@@ -14,7 +14,7 @@ With MOS you can achieve interoperation with two chains:
 ## How it works
 
 ![MOS Message](https://1207039336-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FyIcmSuAZvrXpc5K8L7kz%2Fuploads%2Fgit-blob-ac1ad324c015b64d7161d1ff978b4e4d9d711394%2FcroosChainMessage.png?alt=media)
-See the [details](/develop/mos/message/cross-chain-message.md) here.
+See the [details]([/develop/mos/message/cross-chain-message.md](https://docs.mapprotocol.io/develop/map-omnichain-service-mos/message/cross-chain-message)) here.
 
 ## Build dApps on MOS message
 
