@@ -87,6 +87,87 @@ module.exports = {
       chainId : 1001,
       accounts: accounts
     },
+
+    Conflux: {
+      url: `https://evm.confluxrpc.com`,
+      chainId : 1030,
+      accounts: accounts
+    },
+    ConfluxTest: {
+      url: `https://evmtestnet.confluxrpc.com`,
+      chainId : 71,
+      accounts: accounts
+    },
+
+    Avax: {
+      url: `https://rpc.ankr.com/avalanche`,
+      chainId : 43114,
+      accounts: accounts
+    },
+    Filecoin: {
+      url: `https://rpc.ankr.com/filecoin`,
+      chainId : 314,
+      accounts: accounts
+    },
+
+    Arbitrum: {
+      url: `https://1rpc.io/arb`,
+      chainId : 42161,
+      accounts: accounts
+    },
+    ArbitrumGoerli: {
+      url: `https://arbitrum-goerli.infura.io/v3/` + INFURA_KEY,
+      chainId : 421613,
+      accounts: accounts
+    },
+
+    zkSync: {
+      url: `https://mainnet.era.zksync.io`,
+      chainId : 324,
+      zksync: true,
+      ethNetwork: 'Eth',
+      accounts: accounts
+    },
+    Optimism: {
+      url: `https://1rpc.io/op`,
+      chainId : 10,
+      accounts: accounts
+    },
+    Base: {
+      url: `https://mainnet.base.org`,
+      chainId : 8453,
+      accounts: accounts
+    },
+    zkEvm: {
+      url: `https://zkevm-rpc.com`,
+      chainId : 1101,
+      accounts: accounts
+    },
+    Linea: {
+      url: `https://rpc.linea.build`,
+      chainId : 59144,
+      accounts: accounts
+    },
+    Scroll: {
+      url: `https://rpc.scroll.io`,
+      chainId : 534352,
+      accounts: accounts
+    },
+    Boba: {
+      url: `https://mainnet.boba.network`,
+      chainId : 288,
+      accounts: accounts
+    },
+    Metis: {
+      url: `https://andromeda.metis.io/?owner=1088`,
+      chainId : 1088,
+      accounts: accounts
+    },
+    Mantle: {
+      url: `https://rpc.mantle.xyz`,
+      chainId : 5000,
+      accounts: accounts
+    },
   },
   solidity: {
     compilers: [
