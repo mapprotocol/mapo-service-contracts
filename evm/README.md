@@ -1,6 +1,6 @@
 # MOS Message Contracts
 
-MOS message is a MOS(MAPO Service), MAP Protocol omnichain messaging service, it enables DApp built on one chain to easily interoperate other chains.
+MOS message is a MOS(MAP Omnichain Service), MAP Protocol omnichain messaging service, it enables DApp built on one chain to easily interoperate other chains.
 
 ![MOS Message](https://raw.githubusercontent.com/mapprotocol/docs/master/develop/mos/message/croosChainMessage.png)
 
@@ -10,13 +10,13 @@ With MOS message you can achieve interoperation with two chains:
 
 For examples built on MOS message, visit [omnichain examples](https://github.com/mapprotocol/omnichain-examples).
 
-## MAPO Service
+## MAP Omnichain Service
 
 MAP Protocol is the omnichain layer of Web3, a cross-chain interoperable protocol to empower Web3 apps to thrive in the omnichain future.
 
-MAPO Service (MOS) provides common modules needed by cross-chain DApps to further lower the threshold of building cross-chain DApps with MAP protocol. 
+MAP Omnichain Service (MOS) provides common modules needed by cross-chain DApps to further lower the threshold of building cross-chain DApps with MAP protocol. 
 
-![Illustration of MAP Protocol's MAPO Services (MOS) Layer](https://raw.githubusercontent.com/mapprotocol/docs/master/learn/Teachnical_Mechanism/mcs_final.png)
+![Illustration of MAP Protocol's MAP Omnichain Service (MOS) Layer](https://raw.githubusercontent.com/mapprotocol/docs/master/learn/Teachnical_Mechanism/mcs_final.png)
 
 Visit [docs](https://docs.mapprotocol.io/learn/overiew/mcs) for more MOS information.
 
@@ -59,7 +59,7 @@ npx hardhat test
 ### Deploy
 
 #### MOS Relay Contract
-The following steps help to deploy MOS Relay contracts on MAPO Relay Chain.
+The following steps help to deploy MOS Relay contracts on MAP Relay Chain.
 
 1. Deploy Message fee
 

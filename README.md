@@ -1,4 +1,4 @@
-# MAPO Service (MOS) Message Contracts
+# MAP Omnichain Service (MOS) Message Contracts
 
 ## What is MOS Message
 

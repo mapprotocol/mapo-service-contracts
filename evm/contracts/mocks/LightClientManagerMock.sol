@@ -57,4 +57,9 @@ contract LightClientManager is ILightClientManager,Ownable {
     function verifiableHeaderRange(uint256 ) external pure override returns (uint256, uint256) {
         return (0, 0);
     }
+
+    function finalizedState(uint256, bytes memory) external view override returns (bytes memory) {
+        bytes memory b;
+        return b;
+    }
 }
