@@ -5,13 +5,10 @@ pragma solidity 0.8.7;
 import "@mapprotocol/protocol/contracts/lib/RLPEncode.sol";
 
 contract LightNode {
-
-    function verifyProofData(bytes memory _receiptProof)
-    external
-    pure
-    returns (bool success, string memory message, bytes memory logs){
-
-        return(true,"success",_receiptProof);
+    function verifyProofData(
+        bytes memory _receiptProof
+    ) external pure returns (bool success, string memory message, bytes memory logs) {
+        return (true, "success", _receiptProof);
     }
 
     struct txLog {
@@ -20,10 +17,7 @@ contract LightNode {
         bytes data;
     }
 
-    function encodeTxLog(txLog[] memory _txLogs)
-    external
-    pure
-    returns (bytes memory output){
+    function encodeTxLog(txLog[] memory _txLogs) external pure returns (bytes memory output) {
         bytes[] memory listLog = new bytes[](_txLogs.length);
         bytes[] memory loglist = new bytes[](3);
         for (uint256 j = 0; j < _txLogs.length; j++) {

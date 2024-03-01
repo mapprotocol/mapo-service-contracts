@@ -3,7 +3,6 @@
 pragma solidity ^0.8.0;
 
 interface IEvent {
-
     struct transferOutEvent {
         bytes token;
         bytes from;
@@ -22,5 +21,4 @@ interface IEvent {
         bytes fromAddress;
         bytes messageData;
     }
-
 }

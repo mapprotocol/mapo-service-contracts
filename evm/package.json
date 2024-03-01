@@ -12,7 +12,8 @@
   "scripts": {
     "deploy:FeeCenter": "npx hardhat deploy --tags FeeCenter --network Map",
     "deploy:MapoServiceProxyUp": "npx hardhat deploy --tags MAPCrossChainServiceRelayProxyUp --network Bsc",
-    "deploy:MapoServiceRelayProxyUp": "npx hardhat deploy --tags MapCrossChainServiceRelayProxyUp --network Map"
+    "deploy:MapoServiceRelayProxyUp": "npx hardhat deploy --tags MapCrossChainServiceRelayProxyUp --network Map",
+    "format": "prettier --print-width 120 --tab-width 4 --write ./contracts ./deploy ./tasks ./test"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,7 @@
   },
   "homepage": "https://github.com/mapprotocol/mapo-service-contracts#readme.md",
   "dependencies": {
-    "@mapprotocol/protocol": "^0.4.0",
+    "@mapprotocol/protocol": "^0.6.1",
     "@openzeppelin/contracts": "^4.8.1",
     "@openzeppelin/contracts-upgradeable": "^4.8.3",
     "ajv": "^8.8.2",
@@ -59,8 +60,8 @@
     "hardhat-deploy-ethers": "^0.3.0-beta.7",
     "hardhat-gas-reporter": "^1.0.4",
     "hardhat-spdx-license-identifier": "^2.0.3",
-    "prettier": "^2.2.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.5",
+    "prettier": "^2.8.8",
+    "prettier-plugin-solidity": "^1.1.0",
     "solidity-coverage": "^0.7.22",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.2",

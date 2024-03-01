@@ -3,8 +3,7 @@
 pragma solidity ^0.8.0;
 
 interface IMOSV3 {
-
-    enum ChainType{
+    enum ChainType {
         NULL,
         EVM,
         NEAR
@@ -35,15 +34,21 @@ interface IMOSV3 {
     // @param toChain - Target chain chainID.
     // @param feeToken - Token address that supports payment fee,if it's native, it's address(0).
     // @param gasLimit - The gasLimit allowed to be consumed by an operation performed on the target chain.
-    function getMessageFee(uint256 toChain, address feeToken, uint256 gasLimit) external view returns(uint256, address);
-
+    function getMessageFee(
+        uint256 toChain,
+        address feeToken,
+        uint256 gasLimit
+    ) external view returns (uint256, address);
 
     // @notice Initiate cross-chain transactions. Generate cross-chain logs.
     // @param toChain - Target chain chainID.
     // @param messageData - Structure MessageData encoding.
     // @param feeToken - In what Token would you like to pay the fee.
-    function transferOut(uint256 toChain, bytes memory messageData, address feeToken) external payable  returns(bytes32);
-
+    function transferOut(
+        uint256 toChain,
+        bytes memory messageData,
+        address feeToken
+    ) external payable returns (bytes32);
 
     // @notice Add remote address permission.
     // @param fromChain - The chain id of the source chain.
@@ -55,10 +60,27 @@ interface IMOSV3 {
     // @param targetAddress - The target address.
     // @param fromChain - The chain id of the source chain.
     // @param fromAddress - The call address of the source chain.
-    function getExecutePermission(address targetAddress,uint256 fromChain,bytes memory fromAddress) external view returns(bool);
+    function getExecutePermission(
+        address targetAddress,
+        uint256 fromChain,
+        bytes memory fromAddress
+    ) external view returns (bool);
 
-    event mapMessageOut(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData);
+    event mapMessageOut(
+        uint256 indexed fromChain,
+        uint256 indexed toChain,
+        bytes32 orderId,
+        bytes fromAddrss,
+        bytes callData
+    );
 
-    event mapMessageIn(uint256 indexed fromChain, uint256 indexed toChain, bytes32 orderId, bytes fromAddrss, bytes callData, bool result, bytes reason);
-
+    event mapMessageIn(
+        uint256 indexed fromChain,
+        uint256 indexed toChain,
+        bytes32 orderId,
+        bytes fromAddrss,
+        bytes callData,
+        bool result,
+        bytes reason
+    );
 }
