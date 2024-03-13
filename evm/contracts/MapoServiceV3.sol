@@ -124,6 +124,16 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         return callerList[_targetAddress][_fromChain][_fromAddress];
     }
 
+    function getOrderStatus(
+        uint256,
+        uint256 _blockNum,
+        bytes32 _orderId
+    ) external virtual view override returns (bool exists, bool verifiable, uint256 nodeType) {
+        exists = orderList[_orderId];
+        verifiable = lightNode.isVerifiable(_blockNum, bytes32(""));
+        nodeType = lightNode.nodeType();
+    }
+
     function addRemoteCaller(uint256 _fromChain, bytes memory _fromAddress, bool _tag) external override {
         callerList[msg.sender][_fromChain][_fromAddress] = _tag;
 
@@ -134,7 +144,38 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         uint256 _toChain,
         bytes memory _messageData,
         address _feeToken
-    ) external payable override nonReentrant whenNotPaused returns (bytes32) {
+    ) external virtual payable override nonReentrant whenNotPaused returns (bytes32) {
+        bytes32 orderId = _transferOut(_toChain, _messageData, _feeToken);
+
+        _notifyLightClient(bytes(''));
+
+        return orderId;
+    }
+
+    function transferIn(uint256 _chainId, bytes memory _receiptProof) external virtual nonReentrant whenNotPaused {
+        require(_chainId == relayChainId, "MOSV3: Invalid chain id");
+        (bool sucess, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
+        require(sucess, message);
+
+        LogDecoder.txLog[] memory logs = LogDecoder.decodeTxLogs(logArray);
+        for (uint i = 0; i < logs.length; i++) {
+            LogDecoder.txLog memory log = logs[i];
+            bytes32 topic = abi.decode(log.topics[0], (bytes32));
+
+            if (topic == EvmDecoder.MAP_MESSAGE_TOPIC && relayContract == log.addr) {
+                (, IEvent.dataOutEvent memory outEvent) = EvmDecoder.decodeDataLog(log);
+
+                if (outEvent.toChain == selfChainId) {
+                    _transferIn(outEvent);
+                }
+            }
+        }
+
+        emit mapTransferExecute(_chainId, selfChainId, msg.sender);
+    }
+
+    function _transferOut(uint256 _toChain, bytes memory _messageData, address _feeToken) internal returns (bytes32) {
+
         require(_toChain != selfChainId, "MOSV3: Only other chain");
 
         MessageData memory msgData = abi.decode(_messageData, (MessageData));
@@ -166,28 +207,6 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         emit mapMessageOut(selfChainId, _toChain, orderId, fromAddress, _messageData);
 
         return orderId;
-    }
-
-    function transferIn(uint256 _chainId, bytes memory _receiptProof) external virtual nonReentrant whenNotPaused {
-        require(_chainId == relayChainId, "MOSV3: Invalid chain id");
-        (bool sucess, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
-        require(sucess, message);
-
-        LogDecoder.txLog[] memory logs = LogDecoder.decodeTxLogs(logArray);
-        for (uint i = 0; i < logs.length; i++) {
-            LogDecoder.txLog memory log = logs[i];
-            bytes32 topic = abi.decode(log.topics[0], (bytes32));
-
-            if (topic == EvmDecoder.MAP_MESSAGE_TOPIC && relayContract == log.addr) {
-                (, IEvent.dataOutEvent memory outEvent) = EvmDecoder.decodeDataLog(log);
-
-                if (outEvent.toChain == selfChainId) {
-                    _transferIn(outEvent);
-                }
-            }
-        }
-
-        emit mapTransferExecute(_chainId, selfChainId, msg.sender);
     }
 
     function _transferIn(IEvent.dataOutEvent memory _outEvent) internal checkOrder(_outEvent.orderId) {
@@ -287,6 +306,10 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
                 bytes("MessageTypeError")
             );
         }
+    }
+
+    function _notifyLightClient(bytes memory _data) internal {
+        lightNode.notifyLightClient(address(this), _data);
     }
 
     function _getOrderID(address _from, bytes memory _to, uint _toChain) internal returns (bytes32) {

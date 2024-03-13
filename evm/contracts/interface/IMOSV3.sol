@@ -40,6 +40,12 @@ interface IMOSV3 {
         uint256 gasLimit
     ) external view returns (uint256, address);
 
+    function getOrderStatus(
+        uint256 _chainId,
+        uint256 _blockNum,
+        bytes32 _orderId
+    ) external view returns (bool exists, bool verifiable, uint256 nodeType);
+
     // @notice Initiate cross-chain transactions. Generate cross-chain logs.
     // @param toChain - Target chain chainID.
     // @param messageData - Structure MessageData encoding.

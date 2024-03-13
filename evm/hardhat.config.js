@@ -121,6 +121,12 @@ module.exports = {
       accounts: accounts
     },
 
+    ArbitrumSepolia: {
+      chainId: 421614,
+      url: `https://arbitrum-sepolia.blockpi.network/v1/rpc/public`,
+      accounts: accounts
+    },
+
     zkSync: {
       url: `https://mainnet.era.zksync.io`,
       chainId : 324,

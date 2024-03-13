@@ -35,6 +35,28 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
         emit RegisterChain(_chainId, _address, _type);
     }
 
+    function getOrderStatus(
+        uint256 _chainId,
+        uint256 _blockNum,
+        bytes32 _orderId
+    ) external view override returns (bool exists, bool verifiable, uint256 nodeType) {
+        exists = orderList[_orderId];
+        verifiable = lightClientManager.isVerifiable(_chainId, _blockNum, bytes32(""));
+        nodeType = lightClientManager.nodeType(_chainId);
+    }
+
+    function transferOut(
+        uint256 _toChain,
+        bytes memory _messageData,
+        address _feeToken
+    ) external payable override nonReentrant whenNotPaused returns (bytes32) {
+        bytes32 orderId = _transferOut(_toChain, _messageData, _feeToken);
+
+        _notifyLightClient(_toChain, bytes(''));
+
+        return orderId;
+    }
+
     function transferIn(uint256 _chainId, bytes memory _receiptProof) external override nonReentrant whenNotPaused {
         (bool success, string memory message, bytes memory logArray) = lightClientManager.verifyProofData(
             _chainId,
@@ -95,6 +117,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 if (callerList[target][_outEvent.fromChain][_outEvent.fromAddress]) {
                     (bool success, bytes memory returnData) = target.call{gas: msgData.gasLimit}(msgData.payload);
                     if (success) {
+                        _notifyLightClient(_outEvent.toChain, bytes(''));
                         emit mapMessageOut(
                             _outEvent.fromChain,
                             _outEvent.toChain,
@@ -135,6 +158,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                             msgData.payload
                         )
                     returns (bytes memory newMessageData) {
+                        _notifyLightClient(_outEvent.toChain, bytes(''));
                         emit mapMessageOut(
                             _outEvent.fromChain,
                             _outEvent.toChain,
@@ -176,6 +200,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 );
             }
         } else {
+            _notifyLightClient(_outEvent.toChain, bytes(''));
             emit mapMessageOut(
                 _outEvent.fromChain,
                 _outEvent.toChain,
@@ -184,5 +209,9 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 _outEvent.messageData
             );
         }
+    }
+
+    function _notifyLightClient(uint256 _chainId, bytes memory _data) internal {
+        lightClientManager.notifyLightClient(_chainId, address(this), _data);
     }
 }
