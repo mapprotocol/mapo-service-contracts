@@ -72,9 +72,9 @@ module.exports = {
       chainId : 1,
       accounts: accounts
     },
-    Goerli: {
-      url: `https://goerli.infura.io/v3/` + INFURA_KEY,
-      chainId : 5,
+    Sepolia: {
+      url: `https://1rpc.io/sepolia`,
+      chainId: 11155111,
       accounts: accounts
     },
     Klay: {
@@ -115,12 +115,6 @@ module.exports = {
       chainId : 42161,
       accounts: accounts
     },
-    ArbitrumGoerli: {
-      url: `https://arbitrum-goerli.infura.io/v3/` + INFURA_KEY,
-      chainId : 421613,
-      accounts: accounts
-    },
-
     ArbitrumSepolia: {
       chainId: 421614,
       url: `https://arbitrum-sepolia.blockpi.network/v1/rpc/public`,
@@ -172,6 +166,11 @@ module.exports = {
     Mantle: {
       url: `https://rpc.mantle.xyz`,
       chainId : 5000,
+      accounts: accounts
+    },
+    DodoTest: {
+      url: `https://dodochain-testnet.alt.technology`,
+      chainId : 53457,
       accounts: accounts
     },
   },

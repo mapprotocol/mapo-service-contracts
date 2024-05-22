@@ -24,9 +24,7 @@ contract LightClientManager is ILightClientManager, Ownable {
         lightNode.updateBlockHeader(_blockHeader);
     }
 
-    function notifyLightClient(uint256 _chainId, address _from, bytes memory _data) external override {
-
-    }
+    function notifyLightClient(uint256 _chainId, address _from, bytes memory _data) external override {}
 
     function verifyProofDataWithCache(
         uint256 _chainId,

@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/mapprotocol/mapo-service-contracts#readme.md",
   "dependencies": {
-    "@mapprotocol/protocol": "^0.6.1",
+    "@mapprotocol/protocol": "^0.6.2",
     "@openzeppelin/contracts": "^4.8.1",
     "@openzeppelin/contracts-upgradeable": "^4.8.3",
     "ajv": "^8.8.2",

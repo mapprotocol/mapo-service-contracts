@@ -52,7 +52,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
     ) external payable override nonReentrant whenNotPaused returns (bytes32) {
         bytes32 orderId = _transferOut(_toChain, _messageData, _feeToken);
 
-        _notifyLightClient(_toChain, bytes(''));
+        _notifyLightClient(_toChain, bytes(""));
 
         return orderId;
     }
@@ -96,6 +96,38 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
         emit mapTransferExecute(_chainId, selfChainId, msg.sender);
     }
 
+    function transferInWithIndex(
+        uint256 _chainId,
+        uint256 _logIndex,
+        bytes memory _receiptProof
+    ) external override nonReentrant whenNotPaused {
+        (bool success, string memory message, bytes memory logArray) = lightClientManager.verifyProofDataWithCache(
+            _chainId,
+            _receiptProof
+        );
+        require(success, message);
+        if (chainTypes[_chainId] == ChainType.NEAR) {
+            (bytes memory mosContract, IEvent.transferOutEvent[] memory outEvents) = NearDecoder.decodeNearLog(
+                logArray
+            );
+            IEvent.transferOutEvent memory outEvent = outEvents[_logIndex];
+            require(outEvent.toChain != 0, "MOSV3: Invalid target chain id");
+            require(Utils.checkBytes(mosContract, mosContracts[_chainId]), "MOSV3: Invalid mos contract");
+            // TODO support near
+        } else if (chainTypes[_chainId] == ChainType.EVM) {
+            LogDecoder.txLog memory log = LogDecoder.decodeTxLog(logArray, _logIndex);
+            bytes32 topic = abi.decode(log.topics[0], (bytes32));
+            require(topic == EvmDecoder.MAP_MESSAGE_TOPIC, "MOSV3: Invalid topic");
+            bytes memory mosContract = Utils.toBytes(log.addr);
+            require(Utils.checkBytes(mosContract, mosContracts[_chainId]), "MOSV3: Invalid mos contract");
+
+            (, IEvent.dataOutEvent memory outEvent) = EvmDecoder.decodeDataLog(log);
+            _transferIn(_chainId, outEvent);
+        } else {
+            require(false, "MOSV3: Invalid chain type");
+        }
+    }
+
     function _transferIn(
         uint256 _chainId,
         IEvent.dataOutEvent memory _outEvent
@@ -117,7 +149,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 if (callerList[target][_outEvent.fromChain][_outEvent.fromAddress]) {
                     (bool success, bytes memory returnData) = target.call{gas: msgData.gasLimit}(msgData.payload);
                     if (success) {
-                        _notifyLightClient(_outEvent.toChain, bytes(''));
+                        _notifyLightClient(_outEvent.toChain, bytes(""));
                         emit mapMessageOut(
                             _outEvent.fromChain,
                             _outEvent.toChain,
@@ -158,7 +190,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                             msgData.payload
                         )
                     returns (bytes memory newMessageData) {
-                        _notifyLightClient(_outEvent.toChain, bytes(''));
+                        _notifyLightClient(_outEvent.toChain, bytes(""));
                         emit mapMessageOut(
                             _outEvent.fromChain,
                             _outEvent.toChain,
@@ -200,7 +232,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                 );
             }
         } else {
-            _notifyLightClient(_outEvent.toChain, bytes(''));
+            _notifyLightClient(_outEvent.toChain, bytes(""));
             emit mapMessageOut(
                 _outEvent.fromChain,
                 _outEvent.toChain,

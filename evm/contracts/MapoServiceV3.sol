@@ -128,7 +128,7 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         uint256,
         uint256 _blockNum,
         bytes32 _orderId
-    ) external virtual view override returns (bool exists, bool verifiable, uint256 nodeType) {
+    ) external view virtual override returns (bool exists, bool verifiable, uint256 nodeType) {
         exists = orderList[_orderId];
         verifiable = lightNode.isVerifiable(_blockNum, bytes32(""));
         nodeType = lightNode.nodeType();
@@ -144,18 +144,18 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         uint256 _toChain,
         bytes memory _messageData,
         address _feeToken
-    ) external virtual payable override nonReentrant whenNotPaused returns (bytes32) {
+    ) external payable virtual override nonReentrant whenNotPaused returns (bytes32) {
         bytes32 orderId = _transferOut(_toChain, _messageData, _feeToken);
 
-        _notifyLightClient(bytes(''));
+        _notifyLightClient(bytes(""));
 
         return orderId;
     }
 
     function transferIn(uint256 _chainId, bytes memory _receiptProof) external virtual nonReentrant whenNotPaused {
         require(_chainId == relayChainId, "MOSV3: Invalid chain id");
-        (bool sucess, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
-        require(sucess, message);
+        (bool success, string memory message, bytes memory logArray) = lightNode.verifyProofData(_receiptProof);
+        require(success, message);
 
         LogDecoder.txLog[] memory logs = LogDecoder.decodeTxLogs(logArray);
         for (uint i = 0; i < logs.length; i++) {
@@ -174,8 +174,28 @@ contract MapoServiceV3 is ReentrancyGuardUpgradeable, PausableUpgradeable, IMOSV
         emit mapTransferExecute(_chainId, selfChainId, msg.sender);
     }
 
-    function _transferOut(uint256 _toChain, bytes memory _messageData, address _feeToken) internal returns (bytes32) {
+    function transferInWithIndex(
+        uint256 _chainId,
+        uint256 _logIndex,
+        bytes memory _receiptProof
+    ) external virtual nonReentrant whenNotPaused {
+        require(_chainId == relayChainId, "MOSV3: Invalid chain id");
+        (bool success, string memory message, bytes memory logArray) = lightNode.verifyProofDataWithCache(_receiptProof);
+        require(success, message);
 
+        LogDecoder.txLog memory log = LogDecoder.decodeTxLog(logArray, _logIndex);
+        require(relayContract == log.addr, "MOSV3: Invalid relay");
+
+        bytes32 topic = abi.decode(log.topics[0], (bytes32));
+        require(topic == EvmDecoder.MAP_MESSAGE_TOPIC, "MOSV3: Invalid topic");
+
+        (, IEvent.dataOutEvent memory outEvent) = EvmDecoder.decodeDataLog(log);
+        require(outEvent.toChain == selfChainId, "MOSV3: Invalid target chain id");
+
+        _transferIn(outEvent);
+    }
+
+    function _transferOut(uint256 _toChain, bytes memory _messageData, address _feeToken) internal returns (bytes32) {
         require(_toChain != selfChainId, "MOSV3: Only other chain");
 
         MessageData memory msgData = abi.decode(_messageData, (MessageData));
