@@ -147,14 +147,14 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
             address target = Utils.fromBytes(msgData.target);
             if (msgData.msgType == MessageType.CALLDATA) {
                 if (callerList[target][_outEvent.fromChain][_outEvent.fromAddress]) {
-                    (bool success, bytes memory returnData) = target.call{gas: msgData.gasLimit}(msgData.payload);
+                    (bool success, bytes memory returnData) = target.call(msgData.payload);
                     if (success) {
                         _notifyLightClient(_outEvent.toChain, bytes(""));
                         emit mapMessageOut(
                             _outEvent.fromChain,
                             _outEvent.toChain,
                             _outEvent.orderId,
-                            _outEvent.fromAddress,
+                            msgData.target,
                             returnData
                         );
                     } else {
@@ -182,7 +182,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
             } else if (msgData.msgType == MessageType.MESSAGE) {
                 if (AddressUpgradeable.isContract(target)) {
                     try
-                        IMapoExecutor(target).mapoExecute{gas: msgData.gasLimit}(
+                        IMapoExecutor(target).mapoExecute(
                             _outEvent.fromChain,
                             _outEvent.toChain,
                             _outEvent.fromAddress,
@@ -195,7 +195,7 @@ contract MapoServiceRelayV3 is MapoServiceV3 {
                             _outEvent.fromChain,
                             _outEvent.toChain,
                             _outEvent.orderId,
-                            _outEvent.fromAddress,
+                            msgData.target,
                             newMessageData
                         );
                     } catch (bytes memory reason) {

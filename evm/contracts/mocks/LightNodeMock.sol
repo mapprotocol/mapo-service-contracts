@@ -5,6 +5,10 @@ pragma solidity 0.8.7;
 import "@mapprotocol/protocol/contracts/lib/RLPEncode.sol";
 
 contract LightNode {
+
+    event ClientNotifySend(address indexed sender, uint256 indexed blockHeight, bytes notifyData);
+
+
     function verifyProofData(
         bytes memory _receiptProof
     ) external pure returns (bool success, string memory message, bytes memory logs) {
@@ -32,5 +36,9 @@ contract LightNode {
             listLog[j] = logBytes;
         }
         output = RLPEncode.encodeList(listLog);
+    }
+
+    function notifyLightClient(address _from, bytes memory _data) external {
+        emit ClientNotifySend(_from, block.number, _data);
     }
 }
